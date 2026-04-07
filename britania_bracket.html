@@ -824,39 +824,39 @@ function compartirDiaWhatsApp(day) {
   });
 
   const isElimDay = DAY_PHASE[day] === 'elim';
-  const phaseLabel = isElimDay ? '🏆 Eliminación Directa' : '📋 Fase de Grupos';
+  const phaseLabel = isElimDay ? 'Eliminacion Directa' : 'Fase de Grupos';
 
-  let msg = `🎾 *Torneo Britania 2026*
+  let msg = `*Torneo Britania 2026*
 `;
-  msg += `📅 *${day}* — ${phaseLabel}
+  msg += `*${day}* - ${phaseLabel}
 `;
-  msg += `${'─'.repeat(28)}
+  msg += `${'- '.repeat(14)}
 
 `;
 
   const times = Object.keys(byTime).sort();
   times.forEach(time => {
-    msg += `🕐 *${time} hrs*
+    msg += `*${time} hrs*
 `;
     byTime[time].forEach(m => {
       const court = `C${m.court}`;
       const cat = m.cat;
-      const phase = m.phase==='elim' ? (m.round||'Eliminación') : `Grupo ${String.fromCharCode(65+(m.groupIdx||0))}`;
-      msg += `   ${court} · ${m.a} vs ${m.b}
+      const phase = m.phase==='elim' ? (m.round||'Eliminacion') : `Grupo ${String.fromCharCode(65+(m.groupIdx||0))}`;
+      msg += `  ${court} - ${m.a} vs ${m.b}
 `;
-      msg += `   _${cat} · ${phase}_
+      msg += `  _${cat} - ${phase}_
 `;
     });
     msg += `
 `;
   });
 
-  msg += `${'─'.repeat(28)}
+  msg += `${'- '.repeat(14)}
 `;
-  msg += `¡Mucho éxito a todos! 💪🎾
+  msg += `Mucho exito a todos!
 `;
   msg += `
-_Ver bracket en vivo:_
+Ver bracket en vivo:
 https://piratarocko-pixel.github.io/britania-padel/britania_vista_publica.html`;
 
   const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
