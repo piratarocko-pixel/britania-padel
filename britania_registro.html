@@ -321,20 +321,6 @@
   .btn-remove:hover { color: var(--error); }
 
   /* ── Stats bar ── */
-  .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .stat-box {
-    background: var(--navy);
-    border-radius: var(--radius-sm);
-    padding: 10px 8px;
-    text-align: center;
-  }
-  .stat-val { font-size: 20px; font-weight: 700; color: var(--gold); line-height: 1; }
-  .stat-lbl { font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 3px; letter-spacing: 0.04em; }
 
   /* ── Empty state ── */
   .empty {
@@ -346,43 +332,10 @@
   .empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.4; }
 
   /* ── Test mode banner ── */
-  .test-banner {
-    background: rgba(201,149,42,0.12);
-    border: 1px dashed var(--gold);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .test-banner-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--gold);
-    animation: pulse 1.5s infinite;
-    flex-shrink: 0;
-  }
   @keyframes pulse {
     0%,100% { opacity:1; } 50% { opacity:0.3; }
   }
-  .test-banner p { font-size: 12px; color: var(--gold); font-weight: 500; }
 
-  .btn-load-test {
-    background: none;
-    border: 1px solid rgba(201,149,42,0.4);
-    border-radius: 6px;
-    padding: 5px 12px;
-    color: var(--gold);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-left: auto;
-    flex-shrink: 0;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
   .btn-load-test:hover { background: rgba(201,149,42,0.15); }
 </style>
 </head>
@@ -397,12 +350,7 @@
 
 <div class="container">
 
-  <!-- Test mode banner -->
-  <div class="test-banner">
-    <div class="test-banner-dot"></div>
-    <p>Modo de prueba activo — los datos se guardan en el dispositivo</p>
-    <button class="btn-load-test" onclick="loadTestData()">Cargar datos de prueba</button>
-  </div>
+
 
   <!-- Registration form -->
   <div class="card">
