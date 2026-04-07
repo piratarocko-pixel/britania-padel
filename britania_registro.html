@@ -450,28 +450,14 @@
     <button class="btn-submit" onclick="registrar()">Registrar pareja →</button>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-bar" id="stats-bar" style="display:none;">
-    <div class="stat-box"><div class="stat-val" id="stat-total">0</div><div class="stat-lbl">Total</div></div>
-    <div class="stat-box"><div class="stat-val" id="stat-mix">0</div><div class="stat-lbl">Mixtos</div></div>
-    <div class="stat-box"><div class="stat-val" id="stat-2da">0</div><div class="stat-lbl">2da</div></div>
-    <div class="stat-box"><div class="stat-val" id="stat-34">0</div><div class="stat-lbl">3ra/4ta</div></div>
-  </div>
 
-  <!-- Pairs list -->
-  <div class="card pairs-card" id="pairs-card">
-    <div class="pairs-header">
-      <div class="section-title" style="margin:0;">Parejas registradas</div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <span class="pairs-count" id="pairs-count">0 parejas</span>
-        <button class="btn-clear" onclick="clearAll()" id="btn-clear" style="display:none;">Borrar todo</button>
-      </div>
-    </div>
-    <div id="pairs-container">
-      <div class="empty">
-        <div class="empty-icon">🎾</div>
-        <p>Aún no hay parejas registradas.<br>Llena el formulario para comenzar.</p>
-      </div>
+
+  <!-- Confirmation only — no list shown to players -->
+  <div id="confirmation-card" style="display:none;" class="card">
+    <div style="text-align:center;padding:8px 0;">
+      <div style="font-size:32px;margin-bottom:10px;">🎾</div>
+      <div style="font-size:16px;font-weight:600;color:var(--navy);margin-bottom:6px;" id="confirm-title"></div>
+      <div style="font-size:13px;color:var(--gray);" id="confirm-detail"></div>
     </div>
   </div>
 
@@ -562,6 +548,12 @@
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
     selectedCat = '';
 
+    // Show confirmation card
+    const card = document.getElementById('confirmation-card');
+    document.getElementById('confirm-title').textContent = '¡Inscripción confirmada!';
+    document.getElementById('confirm-detail').textContent = p1n + ' & ' + p2n + ' — Categoría ' + selectedCat;
+    card.style.display = 'block';
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     showToast('✓ Pareja registrada exitosamente');
   }
 
@@ -590,43 +582,7 @@
 
   // ── Render ──
   function render() {
-    const container = document.getElementById('pairs-container');
-    const countEl = document.getElementById('pairs-count');
-    const statsBar = document.getElementById('stats-bar');
-    const clearBtn = document.getElementById('btn-clear');
-
-    countEl.textContent = pairs.length + (pairs.length === 1 ? ' pareja' : ' parejas');
-    clearBtn.style.display = pairs.length > 0 ? 'block' : 'none';
-
-    if (pairs.length === 0) {
-      container.innerHTML = `<div class="empty"><div class="empty-icon">🎾</div><p>Aún no hay parejas registradas.<br>Llena el formulario para comenzar.</p></div>`;
-      statsBar.style.display = 'none';
-      return;
-    }
-
-    // Stats
-    statsBar.style.display = 'grid';
-    const mix = pairs.filter(p => p.cat === 'Mixtos').length;
-    const d2  = pairs.filter(p => p.cat === '2da').length;
-    const d34 = pairs.filter(p => p.cat === '3ra' || p.cat === '4ta').length;
-    document.getElementById('stat-total').textContent = pairs.length;
-    document.getElementById('stat-mix').textContent = mix;
-    document.getElementById('stat-2da').textContent = d2;
-    document.getElementById('stat-34').textContent = d34;
-
-    container.innerHTML = pairs.map((p, i) => `
-      <div class="pair-item">
-        <div>
-          <div class="pair-names">${p.p1} <span>&amp;</span> ${p.p2}</div>
-          <div style="font-size:11px;color:var(--gray);margin-top:2px;">${p.p1p} · ${p.p2p}</div>
-          <div style="font-size:10px;color:#CBD5E0;margin-top:1px;">${p.ts}</div>
-        </div>
-        <div class="pair-right">
-          <span class="pair-cat">${p.cat}</span>
-          <button class="btn-remove" onclick="removePair(${p.id})" title="Eliminar">✕</button>
-        </div>
-      </div>
-    `).join('');
+    // Players only see their own confirmation — no list shown
   }
 
   // ── Load test data ──
