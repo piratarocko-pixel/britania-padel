@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bracket — Club Britania Zavaleta</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#0D1E3C; --navy-mid:#162B52; --gold:#C9952A; --gold-light:#E8B84B;
+    --gold-pale:#FBF4E3; --white:#fff; --gray:#6B8CA0; --light:#F2F5F8;
+    --cream:#FBF7EE; --error:#C0392B; --success:#1A7A4A; --radius:12px; --radius-sm:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;color:var(--navy);}
+
+  .header{background:var(--navy);padding:20px 20px 0;text-align:center;position:relative;overflow:hidden;}
+  .header::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(201,149,42,0.07);}
+  .club-label{display:inline-block;background:var(--gold);color:var(--navy);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:12px;}
+  .header h1{font-family:'Playfair Display',serif;color:var(--white);font-size:clamp(22px,5vw,30px);margin-bottom:6px;}
+  .header h1 span{color:var(--gold);}
+  .header p{color:rgba(255,255,255,.45);font-size:12px;margin-bottom:20px;}
+  .court-line{height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4;}
+
+  .container{max-width:900px;margin:0 auto;padding:20px 14px 60px;}
+
+  /* Tabs */
+  .tabs{display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;}
+  .tab{padding:8px 18px;border-radius:20px;border:1.5px solid rgba(255,255,255,.15);background:transparent;
+    color:rgba(255,255,255,.5);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+    cursor:pointer;white-space:nowrap;transition:all .18s;}
+  .tab:hover{border-color:var(--gold);color:var(--gold);}
+  .tab.active{background:var(--gold);border-color:var(--gold);color:var(--navy);font-weight:600;}
+
+  /* Cards */
+  .card{background:var(--white);border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:0 4px 20px rgba(13,30,60,.15);}
+  .section-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);
+    margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--light);}
+
+  /* Setup panel */
+  .setup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px;}
+  .setup-box{background:var(--cream);border-radius:var(--radius-sm);padding:12px 14px;}
+  .setup-box label{font-size:11px;color:var(--gray);font-weight:500;letter-spacing:.04em;display:block;margin-bottom:6px;}
+  .setup-box input,.setup-box select{width:100%;border:1.5px solid #E2E8F0;border-radius:6px;padding:8px 10px;
+    font-family:'DM Sans',sans-serif;font-size:14px;color:var(--navy);outline:none;background:var(--white);}
+  .setup-box input:focus,.setup-box select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,149,42,.12);}
+
+  .btn{padding:11px 22px;border-radius:var(--radius-sm);border:none;font-family:'DM Sans',sans-serif;
+    font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;}
+  .btn-primary{background:var(--navy);color:var(--gold);}
+  .btn-primary:hover{background:var(--navy-mid);transform:translateY(-1px);box-shadow:0 4px 14px rgba(13,30,60,.25);}
+  .btn-secondary{background:var(--light);color:var(--navy);}
+  .btn-secondary:hover{background:#E2E8F0;}
+  .btn-sm{padding:6px 14px;font-size:12px;}
+  .btn-gold{background:var(--gold);color:var(--navy);}
+  .btn-gold:hover{background:var(--gold-light);}
+
+  /* Pairs input */
+  .pairs-input{display:flex;gap:8px;margin-bottom:10px;}
+  .pairs-input input{flex:1;border:1.5px solid #E2E8F0;border-radius:6px;padding:8px 12px;
+    font-family:'DM Sans',sans-serif;font-size:14px;outline:none;}
+  .pairs-input input:focus{border-color:var(--gold);}
+  .pair-tag{display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1px solid #E2E8F0;
+    border-radius:20px;padding:4px 10px;font-size:13px;margin:3px;}
+  .pair-tag .remove{cursor:pointer;color:var(--gray);font-size:14px;line-height:1;}
+  .pair-tag .remove:hover{color:var(--error);}
+  .pairs-tags{margin-bottom:10px;min-height:36px;}
+
+  /* Groups */
+  .groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+  .group-card{background:var(--cream);border-radius:var(--radius-sm);overflow:hidden;}
+  .group-header{background:var(--navy);color:var(--gold);font-size:12px;font-weight:600;
+    padding:8px 12px;letter-spacing:.06em;display:flex;justify-content:space-between;align-items:center;}
+  .group-header .badge{background:rgba(201,149,42,.2);color:var(--gold-light);font-size:10px;padding:2px 8px;border-radius:10px;}
+  .group-pair{padding:8px 12px;font-size:13px;font-weight:500;border-bottom:1px solid #EEE8D8;
+    display:flex;align-items:center;gap:8px;}
+  .group-pair:last-child{border-bottom:none;}
+  .seed{width:18px;height:18px;border-radius:50%;background:var(--gold);color:var(--navy);
+    font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+  /* Matches */
+  .matches-list{display:flex;flex-direction:column;gap:8px;}
+  .match-card{background:var(--cream);border-radius:var(--radius-sm);padding:10px 14px;
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;border-left:3px solid var(--gold);}
+  .match-team{font-size:13px;font-weight:500;}
+  .match-team.right{text-align:right;}
+  .match-vs{font-size:11px;font-weight:600;color:var(--gray);text-align:center;white-space:nowrap;}
+  .match-info{font-size:10px;color:var(--gray);margin-top:2px;}
+  .match-score{display:flex;gap:4px;justify-content:center;}
+  .score-input{width:36px;height:28px;border:1.5px solid #E2E8F0;border-radius:4px;text-align:center;
+    font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;outline:none;background:var(--white);}
+  .score-input:focus{border-color:var(--gold);}
+  .match-card.played{border-left-color:var(--success);background:#F0FAF4;}
+  .match-card.played .match-team{color:#333;}
+  .winner-badge{font-size:10px;background:#1A7A4A;color:#fff;padding:2px 7px;border-radius:10px;margin-top:2px;display:inline-block;}
+
+  /* Bracket elimination */
+  .bracket-wrap{overflow-x:auto;padding-bottom:10px;}
+  .bracket{display:flex;gap:0;align-items:stretch;}
+  .bracket-round{display:flex;flex-direction:column;min-width:170px;}
+  .round-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--gold);text-align:center;padding:8px;background:var(--navy);border-radius:6px 6px 0 0;}
+  .round-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:8px 6px;gap:8px;}
+  .elim-match{background:var(--cream);border-radius:var(--radius-sm);overflow:hidden;border:1px solid #E8E0CC;}
+  .elim-team{padding:7px 10px;font-size:12px;font-weight:500;display:flex;justify-content:space-between;
+    align-items:center;border-bottom:1px solid #E8E0CC;}
+  .elim-team:last-child{border-bottom:none;}
+  .elim-team.winner{background:var(--gold-pale);font-weight:600;}
+  .elim-team.tbd{color:var(--gray);font-style:italic;}
+  .elim-score{font-size:12px;font-weight:700;color:var(--navy);}
+
+  /* Standings */
+  .standings-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .standings-table th{background:var(--navy);color:var(--gold);padding:8px 10px;text-align:left;font-size:11px;letter-spacing:.05em;}
+  .standings-table th:not(:first-child){text-align:center;}
+  .standings-table td{padding:8px 10px;border-bottom:1px solid var(--light);}
+  .standings-table td:not(:first-child){text-align:center;}
+  .standings-table tr:last-child td{border-bottom:none;}
+  .standings-table tr.qualify{background:#F0FAF4;}
+  .standings-table tr.qualify td:first-child{border-left:3px solid var(--success);}
+  .pos-badge{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+  .pos-1{background:var(--gold);color:var(--navy);}
+  .pos-2{background:#C0C0C0;color:#333;}
+  .pos-3{background:#CD7F32;color:#fff;}
+  .pos-n{background:var(--light);color:var(--gray);}
+
+  /* Day schedule */
+  .day-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+  .day-tab{padding:6px 16px;border-radius:20px;border:1.5px solid rgba(13,30,60,.15);background:var(--white);
+    color:var(--gray);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+  .day-tab.active{background:var(--navy);border-color:var(--navy);color:var(--gold);}
+  .schedule-item{display:grid;grid-template-columns:60px 1fr auto;gap:10px;align-items:center;
+    padding:10px 14px;background:var(--cream);border-radius:var(--radius-sm);margin-bottom:7px;border-left:3px solid var(--gold);}
+  .sched-time{font-size:12px;font-weight:600;color:var(--navy);}
+  .sched-match{font-size:13px;font-weight:500;}
+  .sched-info{font-size:11px;color:var(--gray);}
+  .sched-court{background:var(--navy);color:var(--gold);font-size:11px;font-weight:600;
+    padding:3px 10px;border-radius:20px;white-space:nowrap;}
+
+  /* Stats bar */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+  .stat-box{background:var(--navy);border-radius:var(--radius-sm);padding:12px 8px;text-align:center;}
+  .stat-val{font-size:22px;font-weight:700;color:var(--gold);line-height:1;}
+  .stat-lbl{font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;}
+
+  /* Info banner */
+  .info-banner{background:var(--gold-pale);border:1px solid var(--gold);border-radius:var(--radius-sm);
+    padding:10px 14px;margin-bottom:14px;font-size:12px;color:#7A5500;display:flex;gap:8px;align-items:flex-start;}
+
+  .divider{height:1px;background:var(--light);margin:14px 0;}
+  .empty{text-align:center;padding:24px;color:var(--gray);font-size:13px;}
+
+  /* Phase badge */
+  .phase-badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:14px;}
+  .phase-groups{background:#EEF4FF;color:#2A5FC9;}
+  .phase-elim{background:var(--gold-pale);color:#7A5500;}
+
+  /* Results */
+  .result-match { background:var(--cream); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:8px; border-left:3px solid #E2E8F0; transition:border-color .2s; }
+  .result-match.pending  { border-left-color:#E2E8F0; }
+  .result-match.proposed { border-left-color:var(--gold); background:var(--gold-pale); }
+  .result-match.confirmed{ border-left-color:var(--success); background:#F0FAF4; }
+  .result-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px; }
+  .result-teams  { font-size:14px; font-weight:600; color:var(--navy); }
+  .result-meta   { font-size:11px; color:var(--gray); }
+  .result-status { font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; }
+  .status-pending  { background:var(--light); color:var(--gray); }
+  .status-proposed { background:var(--gold-pale); color:#7A5500; }
+  .status-confirmed{ background:#E0F5EA; color:var(--success); }
+  /* Sets per-game scoring */
+  .sets-row { display:flex; flex-direction:column; gap:10px; }
+  .sets-team-row { display:flex; align-items:center; gap:8px; }
+  .sets-team-name { font-size:12px; font-weight:600; color:var(--navy); width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
+  .set-input { width:44px; height:38px; border:1.5px solid #E2E8F0; border-radius:6px; text-align:center; font-family:"DM Sans",sans-serif; font-size:16px; font-weight:700; outline:none; background:var(--white); color:var(--navy); }
+  .set-input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,149,42,.12); }
+  .set-input.won  { background:var(--navy); color:var(--gold); border-color:var(--navy); }
+  .set-input.lost { background:var(--light); color:var(--gray); }
+  .set-label { font-size:10px; color:var(--gray); text-align:center; margin-top:3px; letter-spacing:.04em; }
+  .set-col { display:flex; flex-direction:column; align-items:center; }
+  .sets-divider { width:1px; height:32px; background:var(--light); margin:0 2px; }
+  .tb-badge { font-size:9px; color:var(--gray); text-align:center; margin-top:2px; }
+  .btn-propose  { background:var(--navy); color:var(--gold); }
+  .btn-confirm  { background:var(--success); color:#fff; }
+  .btn-reject   { background:none; border:1px solid rgba(192,57,43,.3); color:var(--error); }
+  .winner-row   { display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap; }
+  .winner-crown { font-size:13px; }
+  .winner-name  { font-size:13px; font-weight:600; color:var(--success); }
+  .set-score-display { display:inline-flex; gap:6px; align-items:center; }
+  .set-pill { background:var(--navy); color:var(--gold); font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; }
+  .set-pill.lost { background:var(--light); color:var(--gray); }
+  .results-filter { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+  .filter-btn { padding:5px 14px; border-radius:20px; border:1.5px solid rgba(13,30,60,.15); background:var(--white); color:var(--gray); font-family:"DM Sans",sans-serif; font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; }
+  .filter-btn.active { background:var(--navy); border-color:var(--navy); color:var(--gold); }
+  .results-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+
+  @media(max-width:480px){
+    .stats-row{grid-template-columns:repeat(2,1fr);}
+    .match-card{grid-template-columns:1fr;gap:4px;}
+    .match-team.right{text-align:left;}
+  }
+</style>
+  <!-- Firebase compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="header">
+  <div class="club-label">Club Britania Zavaleta · Puebla</div>
+  <h1>Bracket <span>Torneo de Pádel</span></h1>
+  <p>Grupos: Jueves–Viernes &nbsp;·&nbsp; Eliminación: Sábado–Domingo</p>
+  <div class="court-line"></div>
+</div>
+
+<div class="container">
+
+  <!-- Main tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('setup')">⚙ Configuración</button>
+    <button class="tab" onclick="showTab('groups')" id="tab-groups">📋 Grupos</button>
+    <button class="tab" onclick="showTab('schedule')" id="tab-schedule">📅 Calendario</button>
+    <button class="tab" onclick="showTab('standings')" id="tab-standings">📊 Posiciones</button>
+    <button class="tab" onclick="showTab('elim')" id="tab-elim" style="display:none;">🏆 Eliminación</button>
+    <button class="tab" onclick="showTab('results')" id="tab-results" style="display:none;">🎾 Resultados</button>
+  </div>
+
+  <!-- ══ TAB: SETUP ══ -->
+  <div id="pane-setup">
+    <div class="card">
+      <div class="section-title">Configuración del torneo</div>
+      <div class="setup-grid">
+        <div class="setup-box">
+          <label>Nombre del torneo</label>
+          <input type="text" id="cfg-name" value="Torneo Britania 2026 — Edición 1">
+        </div>
+        <div class="setup-box">
+          <label>Canchas disponibles</label>
+          <input type="number" id="cfg-courts" value="6" min="1" max="20">
+        </div>
+        <div class="setup-box">
+          <label>Duración estimada por partido</label>
+          <select id="cfg-duration">
+            <option value="45">45 minutos</option>
+            <option value="60" selected>60 minutos</option>
+            <option value="75">75 minutos</option>
+            <option value="90">90 minutos</option>
+          </select>
+        </div>
+        <div class="setup-box">
+          <label>Hora de inicio</label>
+          <input type="time" id="cfg-start" value="09:00">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">Categorías y parejas</div>
+
+      <div id="cat-panels"></div>
+
+      <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-primary" onclick="generateTournament()">Generar torneo →</button>
+        <button class="btn btn-secondary" onclick="loadDemo()">Cargar demo (32 parejas)</button>
+        <button class="btn btn-gold btn-sm" onclick="saveTournamentToFirebase()">☁ Guardar en Firebase</button>
+        <button class="btn btn-secondary btn-sm" onclick="loadTournamentFromFirebase()">↓ Cargar desde Firebase</button>
+        <button class="btn btn-secondary btn-sm" onclick="clearAll()" style="margin-left:auto;">Limpiar todo</button>
+      </div>
+      <div id="sync-status" style="font-size:12px;color:var(--gold);margin-top:8px;opacity:0;transition:opacity .3s;"></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: GROUPS ══ -->
+  <div id="pane-groups" style="display:none;">
+    <div id="groups-content"></div>
+  </div>
+
+  <!-- ══ TAB: SCHEDULE ══ -->
+  <div id="pane-schedule" style="display:none;">
+    <div id="schedule-content"></div>
+  </div>
+
+  <!-- ══ TAB: STANDINGS ══ -->
+  <div id="pane-standings" style="display:none;">
+    <div id="standings-content"></div>
+  </div>
+
+  <!-- ══ TAB: ELIMINATION ══ -->
+  <div id="pane-elim" style="display:none;">
+    <div id="elim-content"></div>
+  </div>
+
+  <!-- ══ TAB: RESULTS ══ -->
+  <div id="pane-results" style="display:none;">
+    <div id="results-content"></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyCkN-pY3kUc0N4dsAcD9-xQROB8SJeJCII",
+  authDomain: "britania-padel.firebaseapp.com",
+  projectId: "britania-padel",
+  storageBucket: "britania-padel.firebasestorage.app",
+  messagingSenderId: "589677835623",
+  appId: "1:589677835623:web:e296d61a73a1ded603abc2"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+async function saveTournamentToFirebase() {
+  if(!state.generated) { showSyncStatus('⚠ Genera el torneo primero'); return; }
+  try {
+    // Deduplicate schedule by id before saving
+    const seen = new Set();
+    const cleanSchedule = state.schedule.filter(m => {
+      if(seen.has(m.id)) return false;
+      seen.add(m.id);
+      return true;
+    });
+    // Rebuild clean standings (no accumulated duplicates)
+    const cleanStandings = {};
+    CATS.forEach(cat => {
+      const pairs = state.cats[cat] || [];
+      if(!pairs.length) return;
+      cleanStandings[cat] = {};
+      pairs.forEach(p => { cleanStandings[cat][p] = {pts:0, played:0, won:0, lost:0, gf:0, ga:0}; });
+    });
+    // Re-apply only confirmed results to standings
+    if(state.results) {
+      Object.entries(state.results).forEach(([id, r]) => {
+        if(r && r.status === 'confirmed') {
+          const m = cleanSchedule.find(x => x.id === parseInt(id));
+          if(m && m.phase === 'groups' && cleanStandings[m.cat]) {
+            const stA = cleanStandings[m.cat][m.a];
+            const stB = cleanStandings[m.cat][m.b];
+            if(stA && stB) {
+              stA.played++; stB.played++;
+              if(r.setsA > r.setsB) { stA.won++; stA.pts+=3; stB.lost++; }
+              else { stB.won++; stB.pts+=3; stA.lost++; }
+            }
+          }
+        }
+      });
+    }
+    // Reset results when saving fresh tournament
+    state.results = {};
+    await db.collection('torneo').doc('results').set({ data: {} });
+    await db.collection('torneo').doc('config').set({ generated: true, cats: state.cats, updatedAt: new Date().toISOString() });
+    await db.collection('torneo').doc('schedule').set({ matches: cleanSchedule });
+    await db.collection('torneo').doc('standings').set({ data: cleanStandings });
+    await db.collection('torneo').doc('elim').set({ matches: state.elimMatches || {} });
+    state.schedule = cleanSchedule;
+    state.standings = cleanStandings;
+    showSyncStatus('✓ Guardado en Firebase');
+  } catch(e) { showSyncStatus('⚠ Error: ' + e.message); }
+}
+
+// Save a single result to Firebase — called on confirm/reject
+async function saveResultToFirebase(id) {
+  try {
+    await db.collection('torneo').doc('results').set(
+      { data: { [String(id)]: state.results[String(id)] || null } },
+      { merge: true }
+    );
+    await db.collection('torneo').doc('standings').set({ data: state.standings });
+    // If elim match updated, save elim too
+    const isElim = Object.values(state.elimMatches||{}).flat().some(m => m.id === id);
+    if(isElim) await db.collection('torneo').doc('elim').set({ matches: state.elimMatches });
+  } catch(e) { showSyncStatus('⚠ Error al guardar resultado: ' + e.message); }
+}
+
+async function loadTournamentFromFirebase() {
+  try {
+    showSyncStatus('Cargando...');
+    const cfg  = await db.collection('torneo').doc('config').get();
+    const sch  = await db.collection('torneo').doc('schedule').get();
+    const sta  = await db.collection('torneo').doc('standings').get();
+    const res  = await db.collection('torneo').doc('results').get();
+    const elim = await db.collection('torneo').doc('elim').get();
+    if(!cfg.exists) { showSyncStatus('Sin torneo guardado aún'); return; }
+    state.cats        = cfg.data().cats || {};
+    state.generated   = cfg.data().generated || false;
+    state.schedule    = sch.exists  ? sch.data().matches || [] : [];
+    state.standings   = sta.exists  ? sta.data().data    || {} : {};
+    const rawResults = res.exists ? res.data().data || {} : {};
+    // Normalize all keys to strings
+    state.results = {};
+    Object.entries(rawResults).forEach(([k,v]) => { if(v) state.results[String(k)] = v; });
+    state.elimMatches = elim.exists ? elim.data().matches|| {} : {};
+    state.groups = {}; state.groupMatches = {};
+    CATS.forEach(cat => {
+      const pairs = state.cats[cat] || [];
+      if(pairs.length < 2) return;
+      state.groups[cat] = generateGroups(pairs);
+      state.groupMatches[cat] = state.groups[cat].map(g => groupMatches(g));
+    });
+    CATS.forEach(cat => renderTags(cat));
+    resolveElimTeams(); renderGroups(); renderSchedule(); renderStandings(); renderElim(); renderResults();
+    document.getElementById('tab-elim').style.display = '';
+    document.getElementById('tab-results').style.display = '';
+    showSyncStatus('✓ Torneo cargado desde Firebase');
+    showTab('groups');
+  } catch(e) { showSyncStatus('⚠ Error: ' + e.message); }
+}
+
+db.collection('torneo').doc('results').onSnapshot(snap => {
+  if(!snap.exists || !state.generated) return;
+  const incoming = snap.data().data || {};
+  // Normalize all keys to strings
+  state.results = {};
+  Object.entries(incoming).forEach(([id, result]) => {
+    if(result) state.results[String(id)] = result;
+  });
+  // Recalculate standings from scratch based on confirmed results
+  if(state.groups) {
+    CATS.forEach(cat => {
+      const pairs = state.cats[cat] || [];
+      if(!pairs.length) return;
+      state.standings[cat] = {};
+      pairs.forEach(p => { state.standings[cat][p] = {pts:0, played:0, won:0, lost:0, gf:0, ga:0}; });
+    });
+    Object.entries(state.results).forEach(([id, r]) => {
+      if(r.status !== 'confirmed') return;
+      const m = findMatch(id);
+      if(m && m.phase === 'groups') updateStandings(m, r.setsA, r.setsB, r.sets);
+    });
+  }
+  renderResults();
+  renderStandings();
+  showSyncStatus('🎾 Resultado actualizado en vivo');
+});
+
+function showSyncStatus(msg) {
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.opacity = '1';
+  setTimeout(() => el.style.opacity = '0', 3500);
+}
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+const CATS = ['Mixtos','2da','3ra','4ta'];
+const DAYS = ['Jueves','Viernes','Sábado','Domingo'];
+const DAY_SLOTS = { 'Jueves':['10:00','11:00','12:00','16:00','17:00','18:00','19:00','20:00'],
+                    'Viernes':['10:00','11:00','12:00','16:00','17:00','18:00','19:00','20:00'],
+                    'Sábado':['09:00','10:00','11:00','12:00','16:00','17:00','18:00','19:00','20:00'],
+                    'Domingo':['09:00','10:00','11:00','12:00','13:00','16:00','17:00','18:00'] };
+
+let state = { generated: false, cats: {}, schedule: [], elimBrackets: {} };
+
+// ═══════════════════════════════════════════════════════
+// TAB NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showTab(name) {
+  ['setup','groups','schedule','standings','elim','results'].forEach(t => {
+    document.getElementById('pane-'+t).style.display = t===name ? 'block':'none';
+    const btn = document.querySelector(`[onclick="showTab('${t}')"]`);
+    if(btn) btn.classList.toggle('active', t===name);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// SETUP: category panels
+// ═══════════════════════════════════════════════════════
+function initCatPanels() {
+  const el = document.getElementById('cat-panels');
+  el.innerHTML = CATS.map(cat => `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+        <span style="background:var(--navy);color:var(--gold);padding:2px 10px;border-radius:20px;font-size:11px;">${cat}</span>
+        <span id="count-${cat}" style="font-size:11px;color:var(--gray);">0 parejas</span>
+      </div>
+      <div class="pairs-input">
+        <input type="text" id="inp-${cat}" placeholder="Nombre de la pareja (ej. García / López)" onkeydown="if(event.key==='Enter')addPair('${cat}')">
+        <button class="btn btn-sm btn-primary" onclick="addPair('${cat}')">+ Agregar</button>
+      </div>
+      <div class="pairs-tags" id="tags-${cat}"></div>
+    </div>
+  `).join('<div style="height:1px;background:var(--light);margin:10px 0;"></div>');
+
+  CATS.forEach(cat => { if(!state.cats[cat]) state.cats[cat] = []; renderTags(cat); });
+}
+
+function addPair(cat) {
+  const inp = document.getElementById('inp-'+cat);
+  const val = inp.value.trim();
+  if(!val) return;
+  if(state.cats[cat].includes(val)) { inp.style.borderColor='var(--error)'; setTimeout(()=>inp.style.borderColor='',1000); return; }
+  state.cats[cat].push(val);
+  inp.value = '';
+  renderTags(cat);
+}
+
+function removePair(cat, idx) {
+  state.cats[cat].splice(idx,1);
+  renderTags(cat);
+}
+
+function renderTags(cat) {
+  const el = document.getElementById('tags-'+cat);
+  const cnt = document.getElementById('count-'+cat);
+  if(!el) return;
+  el.innerHTML = state.cats[cat].map((p,i)=>`
+    <span class="pair-tag">${p}<span class="remove" onclick="removePair('${cat}',${i})">✕</span></span>
+  `).join('');
+  cnt.textContent = state.cats[cat].length + ' pareja' + (state.cats[cat].length!==1?'s':'');
+}
+
+// ═══════════════════════════════════════════════════════
+// DEMO DATA
+// ═══════════════════════════════════════════════════════
+function loadDemo() {
+  state.cats = {
+    'Mixtos': ['Mendoza/Torres','Luna/Vega','Ríos/Díaz','Serrano/Mora','Pérez/García','Castillo/Ruiz','Herrera/Núñez','Jiménez/Cruz'],
+    '2da':    ['Romero/Flores','Guerrero/Reyes','Morales/Ortiz','Vargas/Ramos','Soto/Aguilar','Fuentes/Medina','Rojas/Muñoz','Delgado/Suárez'],
+    '3ra':    ['Ibarra/Espinoza','Cabrera/Sandoval','Molina/Acosta','Ponce/Salinas','Figueroa/Peña','Miranda/Ávila','Guzmán/Carrillo','León/Estrada'],
+    '4ta':    ['Cortés/Silva','Ramírez/Mejía','Vázquez/Navarro','Paredes/Domínguez','Campos/Lara','Montes/Santos','Pineda/Contreras','Bermúdez/Ochoa'],
+  };
+  CATS.forEach(cat => renderTags(cat));
+}
+
+// ═══════════════════════════════════════════════════════
+// GENERATE TOURNAMENT
+// ═══════════════════════════════════════════════════════
+function shuffle(arr) {
+  const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a;
+}
+
+function numGroups(n) {
+  if(n<=4) return 1;
+  if(n<=8) return 2;
+  if(n<=12) return 3;
+  return 4;
+}
+
+function generateGroups(pairs) {
+  const shuffled = shuffle(pairs);
+  const ng = numGroups(shuffled.length);
+  const groups = Array.from({length:ng}, ()=>[]);
+  shuffled.forEach((p,i)=>groups[i%ng].push(p));
+  return groups;
+}
+
+function groupMatches(group) {
+  const matches=[];
+  for(let i=0;i<group.length;i++)
+    for(let j=i+1;j<group.length;j++)
+      matches.push({a:group[i],b:group[j],scoreA:null,scoreB:null,played:false});
+  return matches;
+}
+
+// Cancha ranges por categoría
+const CAT_COURTS = {
+  '2da':    [1,2,3],
+  '3ra':    [1,2,3],
+  '4ta':    [4,5,6],
+  'Mixtos': [4,5,6],
+};
+
+function assignSlots(matches, days) {
+  // Split matches by court group
+  const groupA = matches.filter(m => (CAT_COURTS[m.cat]||[1,2,3,4,5,6])[0] <= 3);
+  const groupB = matches.filter(m => (CAT_COURTS[m.cat]||[4,5,6])[0] >= 4);
+
+  // Global ID counter — shared across both groups to avoid duplicates
+  let globalId = 0;
+
+  function scheduleGroup(pending, courtNums) {
+    const result = [];
+    let dayIdx = 0, slotIdx = 0;
+    while(pending.length > 0 && dayIdx < days.length) {
+      const day   = days[dayIdx];
+      const slots = DAY_SLOTS[day];
+      const time  = slots[slotIdx];
+      const busyPairs  = new Set();
+      const slotMatches = [];
+      const remaining  = [];
+      for(const m of pending) {
+        if(slotMatches.length < courtNums.length && !busyPairs.has(m.a) && !busyPairs.has(m.b)) {
+          slotMatches.push(m);
+          busyPairs.add(m.a);
+          busyPairs.add(m.b);
+        } else {
+          remaining.push(m);
+        }
+      }
+      slotMatches.forEach((m, ci) => {
+        result.push({ ...m, day, time, court: courtNums[ci], id: String(globalId++) });
+      });
+      pending = remaining;
+      slotIdx++;
+      if(slotIdx >= slots.length) { slotIdx = 0; dayIdx++; }
+    }
+    return result;
+  }
+
+  function balanceAcrossDays(matches, courtNums) {
+    const perDay = Math.ceil(matches.length / days.length);
+    const buckets = days.map((_,i) => matches.slice(i*perDay, (i+1)*perDay));
+    const balanced = [];
+    buckets.forEach(b => balanced.push(...b));
+    return scheduleGroup(balanced, courtNums);
+  }
+
+  return [...balanceAcrossDays([...groupA], [1,2,3]), ...balanceAcrossDays([...groupB], [4,5,6])];
+}
+
+function generateSchedule(groupMatches) {
+  return assignSlots(groupMatches, ['Jueves','Viernes']);
+}
+
+function buildElimMatches(cat) {
+  if(!state.groups[cat]) return [];
+  // Always 2 semis (1°A vs 2°B, 1°B vs 2°A) + 1 final
+  const matches = [];
+  matches.push({ a:`1° Grupo A`, b:`2° Grupo B`, cat, phase:'elim', round:'Semifinal', idx:0 });
+  matches.push({ a:`1° Grupo B`, b:`2° Grupo A`, cat, phase:'elim', round:'Semifinal', idx:1 });
+  matches.push({ a:`Ganador Semi 1`, b:`Ganador Semi 2`, cat, phase:'elim', round:'Final', idx:2 });
+  return matches;
+}
+
+// Resolve elim match teams from real standings
+function resolveElimTeams() {
+  if(!state.elimMatches) return;
+  CATS.forEach(cat => {
+    if(!state.groups[cat] || !state.elimMatches[cat]) return;
+    const tops = state.groups[cat].map((g, gi) => {
+      const sorted = g.map(p => ({
+        name: p, ...(state.standings[cat]?.[p] || {pts:0,won:0,lost:0})
+      })).sort((a,b) => b.pts-a.pts || (b.won-b.lost)-(a.won-a.lost));
+      return { first: sorted[0]?.name, second: sorted[1]?.name };
+    });
+    const [semi1, semi2, final] = state.elimMatches[cat];
+    if(tops[0] && tops[1]) {
+      semi1.a = tops[0].first  || '1° Grupo A';
+      semi1.b = tops[1].second || '2° Grupo B';
+      semi2.a = tops[1].first  || '1° Grupo B';
+      semi2.b = tops[0].second || '2° Grupo A';
+    }
+    const r1 = state.results?.[String(semi1.id)];
+    const r2 = state.results?.[String(semi2.id)];
+    final.a = r1?.status==='confirmed' ? (r1.setsA>r1.setsB ? semi1.a : semi1.b) : 'Ganador Semi 1';
+    final.b = r2?.status==='confirmed' ? (r2.setsA>r2.setsB ? semi2.a : semi2.b) : 'Ganador Semi 2';
+  });
+}
+
+function generateTournament() {
+  const total = CATS.reduce((s,c)=>s+(state.cats[c]||[]).length,0);
+  if(total < 2) { alert('Agrega al menos 2 parejas para generar el torneo.'); return; }
+
+  state.generated = true;
+  state.groups = {};
+  state.groupMatches = {};
+  state.standings = {};
+  state.elimBrackets = {};
+
+  let allGroupMatches = [];
+  state.elimMatches = {}; // stored separately, keyed by cat
+
+  CATS.forEach(cat => {
+    const pairs = state.cats[cat]||[];
+    if(pairs.length < 2) return;
+    state.groups[cat] = generateGroups(pairs);
+    state.groupMatches[cat] = state.groups[cat].map(g => groupMatches(g));
+    state.standings[cat] = {};
+    pairs.forEach(p => { state.standings[cat][p] = {pts:0,played:0,won:0,lost:0,gf:0,ga:0,group:0}; });
+    state.groups[cat].forEach((g,gi) => {
+      g.forEach(p => { state.standings[cat][p].group = gi; });
+      state.groupMatches[cat][gi].forEach(m => allGroupMatches.push({...m, cat, groupIdx:gi, phase:'groups'}));
+    });
+    // Build elim matches with stable IDs based on cat
+    state.elimMatches[cat] = [
+      { id:`${cat}-s1`, a:'1° Grupo A', b:'2° Grupo B', cat, phase:'elim', round:'Semifinal', idx:0, day:'Sábado',  time:'10:00', court: cat==='2da'||cat==='3ra'?1:4 },
+      { id:`${cat}-s2`, a:'1° Grupo B', b:'2° Grupo A', cat, phase:'elim', round:'Semifinal', idx:1, day:'Sábado',  time:'11:00', court: cat==='2da'||cat==='3ra'?2:5 },
+      { id:`${cat}-f1`, a:'Ganador Semi 1', b:'Ganador Semi 2', cat, phase:'elim', round:'Final',     idx:2, day:'Domingo', time:'12:00', court: cat==='2da'||cat==='3ra'?1:4 },
+    ];
+  });
+
+  state.schedule = generateSchedule(allGroupMatches, []);
+
+  renderGroups();
+  renderSchedule();
+  renderStandings();
+  renderElim();
+  renderResults();
+
+  document.getElementById('tab-elim').style.display = '';
+  document.getElementById('tab-results').style.display = '';
+  showTab('groups');
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER GROUPS
+// ═══════════════════════════════════════════════════════
+function renderGroups() {
+  let html = '';
+  CATS.forEach(cat => {
+    if(!state.groups[cat]) return;
+    html += `<div class="card">
+      <div class="section-title">${cat}</div>
+      <div class="groups-grid">`;
+    state.groups[cat].forEach((group, gi) => {
+      html += `<div class="group-card">
+        <div class="group-header">Grupo ${String.fromCharCode(65+gi)}<span class="badge">${group.length} equipos</span></div>`;
+      group.forEach((p,pi) => {
+        html += `<div class="group-pair"><span class="seed">${pi+1}</span>${p}</div>`;
+      });
+      html += `</div>`;
+    });
+    html += `</div></div>`;
+  });
+  document.getElementById('groups-content').innerHTML = html || '<div class="card"><div class="empty">Genera el torneo primero.</div></div>';
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER SCHEDULE
+// ═══════════════════════════════════════════════════════
+let activeDay = 'Jueves';
+const DAY_PHASE = { 'Jueves':'groups','Viernes':'groups','Sábado':'elim','Domingo':'elim' };
+const DAY_PHASE_LABEL = { 'Jueves':'Fase de Grupos','Viernes':'Fase de Grupos','Sábado':'Eliminación Directa','Domingo':'Eliminación Directa' };
+const DAY_PHASE_COLOR = { 'Jueves':'#EEF4FF','Viernes':'#EEF4FF','Sábado':' var(--gold-pale)','Domingo':'var(--gold-pale)' };
+const DAY_PHASE_TEXT  = { 'Jueves':'#2A5FC9','Viernes':'#2A5FC9','Sábado':'#7A5500','Domingo':'#7A5500' };
+
+function renderSchedule() {
+  const byDay = {};
+  DAYS.forEach(d => byDay[d]=[]);
+  state.schedule.forEach(m => { if(byDay[m.day]) byDay[m.day].push(m); });
+
+  let html = `<div class="card"><div class="section-title">Calendario de partidos</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+      <span style="font-size:11px;padding:4px 12px;border-radius:20px;background:#EEF4FF;color:#2A5FC9;font-weight:600;">Jue–Vie: Fase de Grupos</span>
+      <span style="font-size:11px;padding:4px 12px;border-radius:20px;background:var(--gold-pale);color:#7A5500;font-weight:600;">Sáb–Dom: Eliminación Directa</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:var(--light);border-radius:8px;padding:8px 12px;border-left:3px solid #3A78C9;">
+        <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.06em;margin-bottom:4px;">CANCHAS 1 – 3</div>
+        <div style="font-size:12px;font-weight:600;color:var(--navy);">2da categoría &amp; 3ra categoría</div>
+      </div>
+      <div style="background:var(--light);border-radius:8px;padding:8px 12px;border-left:3px solid var(--gold);">
+        <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.06em;margin-bottom:4px;">CANCHAS 4 – 6</div>
+        <div style="font-size:12px;font-weight:600;color:var(--navy);">4ta categoría &amp; Mixtos</div>
+      </div>
+    </div>
+    <div class="day-tabs">${DAYS.map(d=>{
+      const isElim = DAY_PHASE[d]==='elim';
+      const active = d===activeDay;
+      return `<button class="day-tab ${active?'active':''}" onclick="setDay('${d}')"
+        style="${active?'':(isElim?'border-color:var(--gold);color:var(--gold);':'')}">${d} <span style="font-size:10px;opacity:.7;">(${byDay[d].length})</span></button>`;
+    }).join('')}</div>
+    <div style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;margin-bottom:12px;
+      background:${DAY_PHASE_COLOR[activeDay]};color:${DAY_PHASE_TEXT[activeDay]};">
+      ${activeDay} — ${DAY_PHASE_LABEL[activeDay]}
+    </div>
+    <div id="day-matches">`;
+
+  byDay[activeDay].forEach(m => {
+    const isElim = m.phase==='elim';
+    html += `<div class="schedule-item" style="border-left-color:${isElim?'var(--gold)':'#3A78C9'};">
+      <div class="sched-time">${m.time}</div>
+      <div>
+        <div class="sched-match">${m.a} <span style="color:var(--gray);font-weight:400;">vs</span> ${m.b}</div>
+        <div class="sched-info">${m.cat}${isElim?' · Eliminación directa':' · Grupo '+String.fromCharCode(65+(m.groupIdx||0))}</div>
+      </div>
+      <div class="sched-court" style="${isElim?'background:var(--gold);color:var(--navy);':''}">C${m.court}</div>
+    </div>`;
+  });
+
+  if(!byDay[activeDay].length) html += `<div class="empty">Sin partidos programados este día.</div>`;
+  html += `</div></div>`;
+  document.getElementById('schedule-content').innerHTML = html;
+}
+
+function setDay(day) { activeDay=day; renderSchedule(); }
+
+// ═══════════════════════════════════════════════════════
+// RENDER STANDINGS
+// ═══════════════════════════════════════════════════════
+function renderStandings() {
+  let html = `<div class="info-banner">💡 Las 2 primeras parejas de cada grupo avanzan a eliminación directa. Desempate: puntos → diferencia de games (+/-) → games a favor.</div>`;
+
+  CATS.forEach(cat => {
+    if(!state.groups[cat]) return;
+    html += `<div class="card"><div class="section-title">${cat}</div>`;
+
+    state.groups[cat].forEach((group, gi) => {
+      const st = group.map(p => ({
+        name: p,
+        ...state.standings[cat][p],
+        gd: (state.standings[cat][p].won||0) - (state.standings[cat][p].lost||0)
+      })).sort((a,b) => b.pts-a.pts || (b.gf-b.ga)-(a.gf-a.ga) || b.gf-a.gf);
+
+      html += `<div style="margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:600;color:var(--gray);letter-spacing:.06em;margin-bottom:8px;">GRUPO ${String.fromCharCode(65+gi)}</div>
+        <table class="standings-table"><thead><tr>
+          <th>#</th><th>Pareja</th><th>J</th><th>G</th><th>P</th><th>+/-</th><th>Pts</th>
+        </tr></thead><tbody>`;
+      st.forEach((p,i) => {
+        const qualify = i < 2;
+        const pos = i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
+        const gd = (p.gf||0)-(p.ga||0);
+        const gdStr = gd > 0 ? '+'+gd : String(gd);
+        html += `<tr class="${qualify?'qualify':''}">
+          <td><span class="pos-badge ${pos}">${i+1}</span></td>
+          <td><strong>${p.name}</strong></td>
+          <td>${p.played}</td><td>${p.won}</td><td>${p.lost}</td>
+          <td style="font-weight:600;color:${gd>0?'var(--success)':gd<0?'var(--error-color,#C0392B)':'var(--gray)'}">${gdStr}</td>
+          <td><strong>${p.pts}</strong></td>
+        </tr>`;
+      });
+      html += `</tbody></table></div>`;
+    });
+    html += `</div>`;
+  });
+
+  document.getElementById('standings-content').innerHTML = html || '<div class="card"><div class="empty">Genera el torneo primero.</div></div>';
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER ELIMINATION BRACKET
+// ═══════════════════════════════════════════════════════
+// Get sorted standings for a category+group
+function getGroupStandings(cat, gi) {
+  const group = state.groups[cat][gi] || [];
+  return group.map(p => ({
+    name: p,
+    ...(state.standings[cat]?.[p] || {pts:0, played:0, won:0, lost:0})
+  })).sort((a,b) => b.pts - a.pts || (b.won-b.lost) - (a.won-a.lost));
+}
+
+// Get elim matches from schedule for a category
+function getElimMatches(cat) {
+  return state.schedule.filter(m => m.phase === 'elim' && m.cat === cat);
+}
+
+function renderElim() {
+  let html = '';
+  CATS.forEach(cat => {
+    if(!state.groups[cat] || !state.groups[cat].length) return;
+
+    // Use schedule's resolved teams (set by resolveElimTeams)
+    if(!state.elimMatches?.[cat]) return;
+    const [semi1, semi2, finalMatch] = state.elimMatches[cat];
+    if(!semi1 || !semi2) return;
+
+    const semis = [semi1, semi2];
+    const r1 = state.results?.[String(semi1.id)];
+    const r2 = state.results?.[String(semi2.id)];
+    const finalResult = finalMatch ? state.results?.[String(finalMatch.id)] : null;
+    const champion = finalResult?.status==='confirmed' ? (finalResult.setsA>finalResult.setsB ? finalMatch.a : finalMatch.b) : null;
+    const fA = finalMatch?.a || 'Ganador Semi 1';
+    const fB = finalMatch?.b || 'Ganador Semi 2';
+
+    html += `<div class="card">
+      <div class="section-title">${cat} — Eliminación directa</div>
+      <div class="bracket-wrap"><div class="bracket">`;
+
+    // SEMIS column
+    html += `<div class="bracket-round"><div class="round-title">Semifinal</div><div class="round-matches">`;
+    [[semi1, r1],[semi2, r2]].forEach(([s, r]) => {
+      const winner = r?.status==='confirmed' ? (r.setsA>r.setsB ? s.a : s.b) : null;
+      const scoreStr = r?.status==='confirmed' ? r.sets.map(({gA,gB})=>gA+'-'+gB).join(' ') : '';
+      html += `<div class="elim-match">
+        <div class="elim-team ${winner===s.a?'winner':''}">${s.a}
+          <span class="elim-score" style="font-size:10px;">${winner===s.a?scoreStr:''}</span></div>
+        <div class="elim-team ${winner===s.b?'winner':''}">${s.b}
+          <span class="elim-score" style="font-size:10px;">${winner===s.b?scoreStr:''}</span></div>
+      </div>`;
+    });
+    html += `</div></div>`;
+
+    const fScoreStr = finalResult?.status==='confirmed' ? finalResult.sets.map(({gA,gB})=>gA+'-'+gB).join(' ') : '';
+    html += `<div class="bracket-round"><div class="round-title">Final</div><div class="round-matches">
+      <div class="elim-match">
+        <div class="elim-team ${champion===fA?'winner':''} ${r1?.status!=='confirmed'?'tbd':''}">${fA}
+          <span class="elim-score" style="font-size:10px;">${champion===fA?fScoreStr:''}</span></div>
+        <div class="elim-team ${champion===fB?'winner':''} ${r2?.status!=='confirmed'?'tbd':''}">${fB}
+          <span class="elim-score" style="font-size:10px;">${champion===fB?fScoreStr:''}</span></div>
+      </div>
+    </div></div>`;
+
+    // CHAMPION column
+    html += `<div class="bracket-round"><div class="round-title">Campeón</div><div class="round-matches">
+      <div class="elim-match" style="border:2px solid var(--gold);">
+        <div class="elim-team winner" style="background:var(--gold);color:var(--navy);font-weight:700;">
+          ${champion ? '🏆 ' + champion : '🏆 Por definir'}
+        </div>
+      </div>
+    </div></div>`;
+
+    html += `</div></div></div>`;
+  });
+
+  document.getElementById('elim-content').innerHTML = html || '<div class="card"><div class="empty">Genera el torneo primero.</div></div>';
+}
+
+
+// ═══════════════════════════════════════════════════════
+// RESULTS
+// ═══════════════════════════════════════════════════════
+let resultsFilter = 'all';
+
+function renderResults() {
+  if(!state.generated) {
+    document.getElementById('results-content').innerHTML = '<div class="card"><div class="empty">Genera el torneo primero para ver los partidos.</div></div>';
+    return;
+  }
+
+  // All matches — groups and elim
+  const groupMatches = state.schedule.filter(m => m.phase === 'groups');
+  const elimMatches  = state.schedule.filter(m => m.phase === 'elim');
+
+  // Ensure results state exists
+  if(!state.results) state.results = {};
+  groupMatches.forEach(m => {
+    if(!state.results[String(m.id)]) state.results[String(m.id)] = { sA:null, sB:null, status:'pending', proposedBy:null };
+  });
+
+  const total     = groupMatches.length;
+  const confirmed = groupMatches.filter(m => state.results[String(m.id)]?.status==='confirmed').length;
+  const proposed  = groupMatches.filter(m => state.results[String(m.id)]?.status==='proposed').length;
+  const pending   = total - confirmed - proposed;
+
+  let html = `
+  <div class="results-summary">
+    <div class="stat-box"><div class="stat-val">${confirmed}</div><div class="stat-lbl">Confirmados</div></div>
+    <div class="stat-box" style="background:#7A5500;"><div class="stat-val" style="color:#FFD96A;">${proposed}</div><div class="stat-lbl" style="color:rgba(255,255,255,.5);">Por confirmar</div></div>
+    <div class="stat-box" style="background:#2A3A52;"><div class="stat-val" style="color:rgba(255,255,255,.5);">${pending}</div><div class="stat-lbl">Pendientes</div></div>
+  </div>
+  <div class="card">
+    <div class="section-title">Partidos — Fase de grupos</div>
+    <div class="results-filter">
+      <button class="filter-btn ${resultsFilter==='all'?'active':''}" onclick="setFilter('all')">Todos (${total})</button>
+      <button class="filter-btn ${resultsFilter==='pending'?'active':''}" onclick="setFilter('pending')">Pendientes (${pending})</button>
+      <button class="filter-btn ${resultsFilter==='proposed'?'active':''}" onclick="setFilter('proposed')">Por confirmar (${proposed})</button>
+      <button class="filter-btn ${resultsFilter==='confirmed'?'active':''}" onclick="setFilter('confirmed')">Confirmados (${confirmed})</button>
+      <button class="btn btn-sm btn-gold" onclick="simulateAllResults()" style="margin-left:auto;padding:5px 14px;font-size:12px;">🎲 Simular todos</button>
+    </div>`;
+
+  // Group by category
+  const cats = [...new Set(groupMatches.map(m=>m.cat))];
+  cats.forEach(cat => {
+    const catMatches = groupMatches.filter(m => m.cat===cat && (resultsFilter==='all' || state.results[String(m.id)]?.status===resultsFilter));
+    if(!catMatches.length) return;
+    html += `<div style="margin-bottom:18px;">
+      <div style="font-size:11px;font-weight:600;color:var(--gold);letter-spacing:.08em;margin-bottom:10px;text-transform:uppercase;">${cat}</div>`;
+
+    catMatches.forEach(m => {
+      const r = state.results[String(m.id)];
+      const statusLabel = { pending:'Pendiente', proposed:'Propuesto — pendiente confirmación', confirmed:'Confirmado' };
+      const statusClass = { pending:'status-pending', proposed:'status-proposed', confirmed:'status-confirmed' };
+      const cardClass   = { pending:'pending', proposed:'proposed', confirmed:'confirmed' };
+
+      html += `<div class="result-match ${cardClass[r.status]}" id="match-${m.id}">
+        <div class="result-header">
+          <div>
+            <div class="result-teams">${m.a} <span style="color:var(--gray);font-weight:400;">vs</span> ${m.b}</div>
+            <div class="result-meta">Grupo ${String.fromCharCode(65+(m.groupIdx||0))} · ${m.day} ${m.time} · C${m.court}</div>
+          </div>
+          <span class="result-status ${statusClass[r.status]}">${statusLabel[r.status]}</span>
+        </div>`;
+
+      if(r.status === 'confirmed') {
+        const winnerName = r.setsA > r.setsB ? m.a : m.b;
+        html += `<div class="winner-row">
+          <span class="winner-crown">🎾</span>
+          <span class="winner-name">${winnerName}</span>
+          <span style="margin-left:8px;" class="set-score-display">${scoreDisplay(r.sets, m.a, m.b)}</span>
+        </div>`;
+      } else if(r.status === 'proposed') {
+        const winnerName = r.setsA > r.setsB ? m.a : m.b;
+        const setsLine = r.sets.map(({gA,gB})=>gA+'-'+gB).join('  ');
+        html += `<div class="winner-row" style="margin-bottom:8px;">
+          <span style="font-size:12px;color:#7A5500;">Propuesto: <strong>${m.a}</strong> vs <strong>${m.b}</strong> — ${setsLine} · Ganador: <strong>${winnerName}</strong></span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-confirm" onclick="confirmResult('${m.id}')">✓ Confirmar</button>
+          <button class="btn btn-sm btn-reject"  onclick="rejectResult('${m.id}')">✕ Rechazar</button>
+        </div>`;
+      } else {
+        html += renderSetInputs(m.id, m.a, m.b);
+      }
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+
+  // ── Elim matches section ──
+  const allElimForResults = Object.values(state.elimMatches||{}).flat();
+  if(allElimForResults.length) {
+    html += `<div class="card" style="margin-top:14px;"><div class="section-title">Eliminación directa</div>`;
+    allElimForResults.forEach(m => {
+      if(!state.results) state.results = {};
+      if(!state.results[String(m.id)]) state.results[String(m.id)] = { sA:null, sB:null, status:'pending', proposedBy:null };
+      const r = state.results[String(m.id)];
+      const statusLabel = { pending:'Pendiente', proposed:'Propuesto — pendiente confirmación', confirmed:'Confirmado' };
+      const statusClass = { pending:'status-pending', proposed:'status-proposed', confirmed:'status-confirmed' };
+      const cardClass   = { pending:'pending', proposed:'proposed', confirmed:'confirmed' };
+      const roundLabel  = m.round || 'Eliminación';
+      html += `<div class="result-match ${cardClass[r.status]}" id="match-${m.id}">
+        <div class="result-header">
+          <div>
+            <div class="result-teams">${m.a} <span style="color:var(--gray);font-weight:400;">vs</span> ${m.b}</div>
+            <div class="result-meta" style="display:flex;align-items:center;gap:6px;">
+              <span style="background:var(--gold);color:var(--navy);font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;">${roundLabel}</span>
+              ${m.cat} · ${m.day} ${m.time} · C${m.court}
+            </div>
+          </div>
+          <span class="result-status ${statusClass[r.status]}">${statusLabel[r.status]}</span>
+        </div>`;
+      if(r.status === 'confirmed') {
+        const winnerName = r.setsA > r.setsB ? m.a : m.b;
+        html += `<div class="winner-row">
+          <span class="winner-crown">🎾</span>
+          <span class="winner-name">${winnerName}</span>
+          <span style="margin-left:8px;" class="set-score-display">${scoreDisplay(r.sets, m.a, m.b)}</span>
+        </div>`;
+      } else if(r.status === 'proposed') {
+        const winnerName = r.setsA > r.setsB ? m.a : m.b;
+        const setsLine = r.sets.map(({gA,gB})=>gA+'-'+gB).join('  ');
+        html += `<div class="winner-row" style="margin-bottom:8px;">
+          <span style="font-size:12px;color:#7A5500;">Propuesto: <strong>${m.a}</strong> vs <strong>${m.b}</strong> — ${setsLine} · Ganador: <strong>${winnerName}</strong></span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-confirm" onclick="confirmResult('${m.id}')">✓ Confirmar</button>
+          <button class="btn btn-sm btn-reject"  onclick="rejectResult('${m.id}')">✕ Rechazar</button>
+        </div>`;
+      } else {
+        // Check if semi winners are known before allowing result entry
+        const semisConfirmed = m.round && m.round.toLowerCase().includes('final') && !m.round.toLowerCase().includes('semi')
+          ? (state.elimMatches?.[m.cat] || []).filter(x => x.round==='Semifinal')
+              .every(x => state.results?.[String(x.id)]?.status === 'confirmed')
+          : true;
+        if(!semisConfirmed) {
+          html += `<div style="font-size:12px;color:var(--gray);padding:4px 0;">⏳ Esperando resultados de semifinales...</div>`;
+        } else if(m.a === 'Por definir' || m.b === 'Por definir') {
+          html += `<div style="font-size:12px;color:var(--gray);padding:4px 0;">⏳ Clasificados por definir según semifinales...</div>`;
+        } else {
+          html += renderSetInputs(m.id, m.a, m.b);
+        }
+      }
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  document.getElementById('results-content').innerHTML = html;
+}
+
+function setFilter(f) { resultsFilter = f; renderResults(); }
+
+// Validate a single set score: winner must have 6+ games, loser <=5, or 7-6 tie-break
+function validSet(a, b) {
+  if(a === b) return false;
+  const hi = Math.max(a,b), lo = Math.min(a,b);
+  if(hi === 6 && lo <= 4) return true;   // 6-0 … 6-4
+  if(hi === 7 && lo === 5) return true;   // 7-5
+  if(hi === 7 && lo === 6) return true;   // 7-6 tie-break
+  return false;
+}
+
+function proposeResult(id, teamA, teamB) {
+  const sets = [];
+  let setsA = 0, setsB = 0;
+  const safeId = String(id).replace(/[^a-zA-Z0-9_]/g, '_');
+  for(let s = 1; s <= 3; s++) {
+    const inpA = document.getElementById('g'+s+'A-'+safeId);
+    const inpB = document.getElementById('g'+s+'B-'+safeId);
+    if(!inpA || !inpB) break;
+    const gA = parseInt(inpA.value)||0, gB = parseInt(inpB.value)||0;
+    // Skip blank sets (both 0 after set 1 = not played)
+    if(s > 1 && gA === 0 && gB === 0) continue;
+    if(!validSet(gA, gB)) {
+      alert('Set ' + s + ': el marcador ' + gA + '-' + gB + ' no es válido. Revisa los games.');
+      inpA.style.borderColor = 'var(--error)';
+      inpB.style.borderColor = 'var(--error)';
+      return;
+    }
+    sets.push({gA, gB});
+    if(gA > gB) setsA++; else setsB++;
+    // Stop when someone wins 2 sets
+    if(setsA === 2 || setsB === 2) break;
+  }
+  if(sets.length === 0) { alert('Ingresa al menos el resultado del Set 1.'); return; }
+  if(setsA === setsB) { alert('El partido no puede terminar en empate de sets.'); return; }
+  state.results[String(id)] = { sets, setsA, setsB, status:'proposed', proposedBy:'jugador' };
+  renderResults();
+  renderElim();
+  showToastResult('Resultado propuesto — esperando confirmación del organizador');
+}
+
+function findMatch(id) {
+  // Look in schedule first, then elimMatches
+  const inSchedule = state.schedule.find(x => String(x.id) === String(id));
+  if(inSchedule) return inSchedule;
+  for(const cat of CATS) {
+    const elims = state.elimMatches?.[cat] || [];
+    const found = elims.find(x => String(x.id) === String(id));
+    if(found) return found;
+  }
+  return null;
+}
+
+function confirmResult(id) {
+  const r = state.results[String(id)];
+  if(!r) return;
+  r.status = 'confirmed';
+  const m = findMatch(id);
+  if(m && m.phase==='groups') updateStandings(m, r.setsA, r.setsB, r.sets);
+  resolveElimTeams();
+  renderElim();
+  renderResults();
+  renderStandings();
+  showToastResult('🎾 Resultado confirmado');
+  saveResultToFirebase(id);
+}
+
+function updateElimTeams(cat) {
+  // Find semi matches and their winners
+  const semis = state.schedule.filter(x => x.phase==='elim' && x.cat===cat && x.round && x.round.toLowerCase().includes('semi'));
+  const semiWinners = semis.map(s => {
+    const r = state.results?.[String(s.id)];
+    return r?.status==='confirmed' ? (r.setsA > r.setsB ? s.a : s.b) : null;
+  });
+  // Update final match with real team names
+  const finalMatch = state.schedule.find(x => x.phase==='elim' && x.cat===cat && x.round && x.round.toLowerCase().includes('final') && !x.round.toLowerCase().includes('semi'));
+  if(finalMatch && semiWinners[0] && semiWinners[1]) {
+    finalMatch.a = semiWinners[0];
+    finalMatch.b = semiWinners[1];
+  }
+}
+
+function rejectResult(id) {
+  state.results[String(id)] = { sets:null, setsA:null, setsB:null, status:'pending', proposedBy:null };
+  saveResultToFirebase(id);
+  renderResults();
+  showToastResult('Resultado rechazado — puede volver a proponerse');
+}
+
+function updateStandings(m, sA, sB, sets) {
+  const cat = m.cat;
+  if(!state.standings[cat]) return;
+  const stA = state.standings[cat][m.a];
+  const stB = state.standings[cat][m.b];
+  if(!stA || !stB) return;
+  stA.played++; stB.played++;
+  if(sA > sB) { stA.won++; stA.pts += 3; stB.lost++; }
+  else         { stB.won++; stB.pts += 3; stA.lost++; }
+  // Track games for tiebreaker
+  if(sets && sets.length) {
+    sets.forEach(({gA, gB}) => {
+      stA.gf = (stA.gf||0) + gA; stA.ga = (stA.ga||0) + gB;
+      stB.gf = (stB.gf||0) + gB; stB.ga = (stB.ga||0) + gA;
+    });
+  }
+}
+
+function scoreDisplay(sets, teamA, teamB) {
+  if(!sets || !sets.length) return '';
+  return sets.map(({gA,gB}) => {
+    const aWon = gA > gB;
+    return `<span class="set-pill ${aWon?'':'lost'}">${gA}</span><span style="font-size:10px;color:var(--gray);">–</span><span class="set-pill ${aWon?'lost':''}">${gB}</span>`;
+  }).join('<span style="width:6px;display:inline-block;"></span>');
+}
+
+function renderSetInputs(id, teamA, teamB) {
+  const shortA = teamA.length>16 ? teamA.slice(0,15)+'…' : teamA;
+  const shortB = teamB.length>16 ? teamB.slice(0,15)+'…' : teamB;
+  const domId = String(id).replace(/[^a-zA-Z0-9_]/g, '_');
+  let html = `<div class="sets-row">`;
+
+  html += `<div style="display:flex;align-items:center;gap:8px;"><div style="width:120px;"></div>`;
+  for(let s=1;s<=3;s++) {
+    html += `<div class="set-col" style="width:44px;"><div class="set-label">Set ${s}</div></div>`;
+    if(s<3) html += `<div style="width:6px;"></div>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="sets-team-row"><div class="sets-team-name" title="${teamA}">${shortA}</div>`;
+  for(let s=1;s<=3;s++) {
+    html += `<input class="set-input" id="g${s}A-${domId}" type="number" min="0" max="7" value="" placeholder="—" oninput="highlightSets('${domId}')" onfocus="this.select()">`;
+    if(s<3) html += `<div style="width:6px;"></div>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="sets-team-row"><div class="sets-team-name" title="${teamB}">${shortB}</div>`;
+  for(let s=1;s<=3;s++) {
+    html += `<input class="set-input" id="g${s}B-${domId}" type="number" min="0" max="7" value="" placeholder="—" oninput="highlightSets('${domId}')" onfocus="this.select()">`;
+    if(s<3) html += `<div style="width:6px;"></div>`;
+  }
+  html += `</div>`;
+
+  html += `<div style="margin-top:4px;"><button class="btn btn-sm btn-propose" onclick="proposeResult('${id}','${teamA.replace(/'/g,"\'")}','${teamB.replace(/'/g,"\'")}')">Proponer resultado →</button></div>`;
+  html += `</div>`;
+  return html;
+}
+function highlightSets(id) {
+  const domId = String(id).replace(/[^a-zA-Z0-9_]/g, '_');
+  for(let s=1;s<=3;s++) {
+    const inpA = document.getElementById('g'+s+'A-'+domId);
+    const inpB = document.getElementById('g'+s+'B-'+domId);
+    if(!inpA||!inpB) continue;
+    const gA = parseInt(inpA.value), gB = parseInt(inpB.value);
+    if(isNaN(gA)||isNaN(gB)) { inpA.className='set-input'; inpB.className='set-input'; continue; }
+    if(gA>gB) { inpA.className='set-input won'; inpB.className='set-input lost'; }
+    else if(gB>gA) { inpA.className='set-input lost'; inpB.className='set-input won'; }
+    else { inpA.className='set-input'; inpB.className='set-input'; }
+  }
+}
+
+function showToastResult(msg) {
+  const t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════════════
+// SIMULATE RESULTS
+// ═══════════════════════════════════════════════════════
+function randomSetScore() {
+  // Returns [winnerGames, loserGames] — always valid padel scores
+  // Valid: 6-0, 6-1, 6-2, 6-3, 6-4, 7-5, 7-6
+  const scores = [
+    [6,0],[6,1],[6,2],[6,3],[6,4],[7,5],[7,6]
+  ];
+  // Weight: favor closer scores (more realistic)
+  const weights = [1, 2, 3, 4, 5, 4, 3];
+  const total = weights.reduce((a,b)=>a+b, 0);
+  let rand = Math.random() * total;
+  for(let i=0;i<scores.length;i++) {
+    rand -= weights[i];
+    if(rand <= 0) return scores[i];
+  }
+  return scores[4]; // fallback 6-4
+}
+
+function simulateMatch(m) {
+  const aWins = Math.random() > 0.5;
+  const sets = [];
+  let setsA = 0, setsB = 0;
+  while(setsA < 2 && setsB < 2) {
+    // Bias: winner wins ~65% of sets
+    const aWinsSet = aWins ? (Math.random() > 0.35) : (Math.random() > 0.65);
+    const [w, l] = randomSetScore();
+    const gA = aWinsSet ? w : l;
+    const gB = aWinsSet ? l : w;
+    sets.push({ gA, gB });
+    if(gA > gB) setsA++; else setsB++;
+  }
+  return { sets, setsA, setsB, status: 'confirmed', proposedBy: 'simulado' };
+}
+
+async function simulateAllResults() {
+  if(!state.generated) { alert('Genera el torneo primero.'); return; }
+  if(!confirm('¿Simular resultados para todos los partidos pendientes?')) return;
+  if(!state.results) state.results = {};
+
+  // Reset standings from scratch
+  CATS.forEach(cat => {
+    const pairs = state.cats[cat] || [];
+    if(!pairs.length) return;
+    state.standings[cat] = {};
+    pairs.forEach(p => { state.standings[cat][p] = {pts:0, played:0, won:0, lost:0, gf:0, ga:0}; });
+  });
+  state.results = {}; // clear all previous results
+
+  // Simulate ALL matches in schedule (groups only — elim is manual)
+  // Be robust: match regardless of phase field
+  const allPairs = Object.values(state.cats).flat();
+  state.schedule.forEach(m => {
+    // Skip if both teams are not real pairs (e.g. placeholder elim matches)
+    if(!allPairs.includes(m.a) || !allPairs.includes(m.b)) return;
+    // Skip elim matches
+    if(m.phase === 'elim') return;
+    const result = simulateMatch(m);
+    state.results[String(m.id)] = result;
+    // Update standings — find cat from match
+    const cat = m.cat || CATS.find(c => (state.cats[c]||[]).includes(m.a));
+    if(cat) updateStandings({...m, cat}, result.setsA, result.setsB, result.sets);
+  });
+
+  resolveElimTeams();
+  renderResults();
+  renderStandings();
+  renderElim();
+
+  // Save all to Firebase — overwrite completely (no merge) to avoid stale data
+  try {
+    await db.collection('torneo').doc('results').set({ data: state.results });
+    await db.collection('torneo').doc('standings').set({ data: state.standings });
+    await db.collection('torneo').doc('elim').set({ matches: state.elimMatches || {} });
+    showSyncStatus('🎾 Grupos simulados — captura las semis y final');
+  } catch(e) {
+    showSyncStatus('⚠ Error al guardar: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+function clearAll() {
+  if(!confirm('¿Limpiar todas las parejas y el torneo generado?')) return;
+  state = { generated:false, cats:{}, schedule:[], elimBrackets:{} };
+  CATS.forEach(cat => state.cats[cat]=[]);
+  initCatPanels();
+  showTab('setup');
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+initCatPanels();
+</script>
+</body>
+</html>
