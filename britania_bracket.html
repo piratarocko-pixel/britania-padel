@@ -602,8 +602,11 @@ function assignSlots(matches, days) {
   }
 
   function balanceAcrossDays(matches, courtNums) {
-    const perDay = Math.ceil(matches.length / days.length);
-    const buckets = days.map((_,i) => matches.slice(i*perDay, (i+1)*perDay));
+    // Interleave matches round-robin across days for perfect balance
+    // e.g. 12 matches, 2 days → alternates match 0,2,4...→Day1, 1,3,5...→Day2
+    const buckets = days.map(() => []);
+    matches.forEach((m, i) => buckets[i % days.length].push(m));
+    // Flatten: all of day1, then all of day2 (scheduleGroup handles day progression)
     const balanced = [];
     buckets.forEach(b => balanced.push(...b));
     return scheduleGroup(balanced, courtNums);
@@ -828,36 +831,37 @@ function compartirDiaWhatsApp(day) {
 
   let msg = `*Torneo Britania 2026*
 `;
-  msg += `*${day}* - ${phaseLabel}
-`;
-  msg += `${'- '.repeat(14)}
+  msg += `*${day}* | ${phaseLabel}
 
 `;
 
   const times = Object.keys(byTime).sort();
-  times.forEach(time => {
-    msg += `*${time} hrs*
+  times.forEach((time, ti) => {
+    msg += `*--- ${time} hrs ---*
+
 `;
     byTime[time].forEach(m => {
-      const court = `C${m.court}`;
       const cat = m.cat;
-      const phase = m.phase==='elim' ? (m.round||'Eliminacion') : `Grupo ${String.fromCharCode(65+(m.groupIdx||0))}`;
-      msg += `  ${court} - ${m.a} vs ${m.b}
+      const phase = m.phase==='elim'
+        ? (m.round||'Eliminacion')
+        : `Grupo ${String.fromCharCode(65+(m.groupIdx||0))}`;
+      msg += `*Cancha ${m.court}*
 `;
-      msg += `  _${cat} - ${phase}_
+      msg += `${m.a}
+`;
+      msg += `vs
+`;
+      msg += `${m.b}
+`;
+      msg += `_${cat} - ${phase}_
+
 `;
     });
-    msg += `
-`;
   });
 
-  msg += `${'- '.repeat(14)}
+  msg += `*Ver bracket en vivo:*
 `;
-  msg += `Mucho exito a todos!
-`;
-  msg += `
-Ver bracket en vivo:
-https://piratarocko-pixel.github.io/britania-padel/britania_vista_publica.html`;
+  msg += `https://piratarocko-pixel.github.io/britania-padel/britania_vista_publica.html`;
 
   const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
   window.open(url, '_blank');
