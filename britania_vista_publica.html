@@ -186,7 +186,7 @@
     <button class="tab active" onclick="showTab('proximos')">⚡ Próximos</button>
     <button class="tab" onclick="showTab('calendario')">📅 Calendario</button>
     <button class="tab" onclick="showTab('posiciones')">📊 Posiciones</button>
-    <button class="tab" onclick="showTab('bracket')">🏆 Bracket</button>
+    <button class="tab" onclick="showTab('bracket')">🏆 Eliminación</button>
   </div>
 
   <div id="pane-proximos"></div>
@@ -236,6 +236,7 @@ function showLiveStatus(msg) {
 let rawSchedule = [];
 let rawResults  = {};
 let rawStandings = {};
+let publicResults = {}; // normalized string-keyed results
 
 // Build schedule with results merged in — deduplicated by id
 function buildSchedule() {
@@ -276,7 +277,14 @@ db.collection('torneo').doc('config').onSnapshot(snap => {
 // Listen for elim matches
 db.collection('torneo').doc('elim').onSnapshot(snap => {
   if(!snap.exists) return;
-  TOURNAMENT.elimMatches = snap.data().matches || {};
+  const raw = snap.data().matches || {};
+  // Ensure each category is a proper array sorted by idx
+  TOURNAMENT.elimMatches = {};
+  Object.entries(raw).forEach(([cat, arr]) => {
+    if(Array.isArray(arr)) {
+      TOURNAMENT.elimMatches[cat] = [...arr].sort((a,b) => (a.idx||0)-(b.idx||0));
+    }
+  });
   renderBracket();
 });
 
@@ -297,12 +305,15 @@ db.collection('torneo').doc('standings').onSnapshot(snap => {
 // Listen: results
 db.collection('torneo').doc('results').onSnapshot(snap => {
   rawResults = snap.exists ? (snap.data().data || {}) : {};
+  // Normalize to string keys for publicResults
+  publicResults = {};
+  Object.entries(rawResults).forEach(([k,v]) => { if(v) publicResults[String(k)] = v; });
   showLiveStatus('🎾 Resultado actualizado en vivo');
   scheduleRender();
+  renderBracket();
 });
 
 // ── Propose result from public view ──
-let publicResults = {}; // track proposed results locally
 
 db.collection('torneo').doc('results').onSnapshot(snap => {
   publicResults = snap.exists ? (snap.data().data || {}) : {};
