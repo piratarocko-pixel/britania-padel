@@ -772,9 +772,15 @@ function renderSchedule() {
       return `<button class="day-tab ${active?'active':''}" onclick="setDay('${d}')"
         style="${active?'':(isElim?'border-color:var(--gold);color:var(--gold);':'')}">${d} <span style="font-size:10px;opacity:.7;">(${byDay[d].length})</span></button>`;
     }).join('')}</div>
-    <div style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;margin-bottom:12px;
-      background:${DAY_PHASE_COLOR[activeDay]};color:${DAY_PHASE_TEXT[activeDay]};">
-      ${activeDay} — ${DAY_PHASE_LABEL[activeDay]}
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <div style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;
+        background:${DAY_PHASE_COLOR[activeDay]};color:${DAY_PHASE_TEXT[activeDay]};">
+        ${activeDay} — ${DAY_PHASE_LABEL[activeDay]}
+      </div>
+      <button class="btn btn-sm" onclick="compartirDiaWhatsApp('${activeDay}')"
+        style="background:#25D366;color:#fff;border:none;display:flex;align-items:center;gap:6px;font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;font-weight:600;">
+        📲 Compartir ${activeDay} por WhatsApp
+      </button>
     </div>
     <div id="day-matches">`;
 
@@ -796,6 +802,66 @@ function renderSchedule() {
 }
 
 function setDay(day) { activeDay=day; renderSchedule(); }
+
+function compartirDiaWhatsApp(day) {
+  const byDay = {};
+  DAYS.forEach(d => byDay[d]=[]);
+  state.schedule.forEach(m => { if(byDay[m.day]) byDay[m.day].push(m); });
+
+  // Also include elim matches for that day
+  Object.values(state.elimMatches||{}).flat().forEach(m => {
+    if(m.day === day && byDay[day]) byDay[day].push(m);
+  });
+
+  const matches = byDay[day] || [];
+  if(!matches.length) { alert('No hay partidos programados para ' + day); return; }
+
+  // Group by time slot
+  const byTime = {};
+  matches.forEach(m => {
+    if(!byTime[m.time]) byTime[m.time] = [];
+    byTime[m.time].push(m);
+  });
+
+  const isElimDay = DAY_PHASE[day] === 'elim';
+  const phaseLabel = isElimDay ? '🏆 Eliminación Directa' : '📋 Fase de Grupos';
+
+  let msg = `🎾 *Torneo Britania 2026*
+`;
+  msg += `📅 *${day}* — ${phaseLabel}
+`;
+  msg += `${'─'.repeat(28)}
+
+`;
+
+  const times = Object.keys(byTime).sort();
+  times.forEach(time => {
+    msg += `🕐 *${time} hrs*
+`;
+    byTime[time].forEach(m => {
+      const court = `C${m.court}`;
+      const cat = m.cat;
+      const phase = m.phase==='elim' ? (m.round||'Eliminación') : `Grupo ${String.fromCharCode(65+(m.groupIdx||0))}`;
+      msg += `   ${court} · ${m.a} vs ${m.b}
+`;
+      msg += `   _${cat} · ${phase}_
+`;
+    });
+    msg += `
+`;
+  });
+
+  msg += `${'─'.repeat(28)}
+`;
+  msg += `¡Mucho éxito a todos! 💪🎾
+`;
+  msg += `
+_Ver bracket en vivo:_
+https://piratarocko-pixel.github.io/britania-padel/britania_vista_publica.html`;
+
+  const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+}
 
 // ═══════════════════════════════════════════════════════
 // RENDER STANDINGS
