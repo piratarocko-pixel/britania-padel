@@ -207,6 +207,7 @@ const TOURNAMENT = {
   pairs: { 'Mixtos':[], '2da':[], '3ra':[], '4ta':[] },
   schedule: [],
   standings: {},
+  elimMatches: {},
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -272,6 +273,13 @@ db.collection('torneo').doc('config').onSnapshot(snap => {
 });
 
 // Listen: schedule — store raw, never render directly
+// Listen for elim matches
+db.collection('torneo').doc('elim').onSnapshot(snap => {
+  if(!snap.exists) return;
+  TOURNAMENT.elimMatches = snap.data().matches || {};
+  renderBracket();
+});
+
 db.collection('torneo').doc('schedule').onSnapshot(snap => {
   if(!snap.exists) return;
   rawSchedule = snap.data().matches || [];
@@ -664,54 +672,63 @@ function renderBracket() {
   let html = '';
 
   catsToShow.forEach(cat => {
-    const catPairs = TOURNAMENT.pairs[cat] || [];
-    // Build 2 groups of 4 → top 2 each = 4 in semis
-    const qualified = [
-      { name: 'Ríos/Díaz',      seed:'1° A' },
-      { name: 'Mendoza/Torres', seed:'2° A' },
-      { name: 'Pérez/García',   seed:'1° B' },
-      { name: 'Herrera/Núñez',  seed:'2° B' },
-    ].filter(q => catPairs.includes(q.name));
-
-    if(!qualified.length) {
-      // Generic for other cats
-      for(let i=0;i<4;i++) qualified.push({ name: catPairs[i]||`Clasificado ${i+1}`, seed:`${i+1}°` });
+    const elimCat = TOURNAMENT.elimMatches?.[cat];
+    if(!elimCat || elimCat.length < 2) {
+      html += `<div class="card"><div class="section-title">${cat}</div>
+        <div class="empty" style="padding:16px;">⏳ Fase de grupos en curso — bracket disponible al terminar</div></div>`;
+      return;
     }
 
-    // Pad to power of 2
-    let size=2; while(size<qualified.length) size*=2;
-    while(qualified.length<size) qualified.push({name:'BYE',bye:true});
+    const [semi1, semi2, finalMatch] = elimCat;
+    const r1 = publicResults[String(semi1.id)];
+    const r2 = publicResults[String(semi2.id)];
+    const rF = finalMatch ? publicResults[String(finalMatch.id)] : null;
 
-    const rounds = [];
-    let current = [];
-    for(let i=0;i<qualified.length;i+=2)
-      current.push({ a:qualified[i], b:qualified[i+1]||{name:'BYE',bye:true}, winner:qualified[i+1]&&!qualified[i+1].bye?null:qualified[i].name });
-    rounds.push(current);
-    while(current.length>1) {
-      const next=[];
-      for(let i=0;i<current.length;i+=2) {
-        const mA=current[i], mB=current[i+1]||{winner:null};
-        next.push({ a:{name:mA.winner||'Por definir',bye:!mA.winner}, b:{name:mB.winner||'Por definir',bye:!mB.winner}, winner:null });
-      }
-      rounds.push(next); current=next;
-    }
+    const w1 = r1?.status==='confirmed' ? (r1.setsA>r1.setsB ? semi1.a : semi1.b) : null;
+    const w2 = r2?.status==='confirmed' ? (r2.setsA>r2.setsB ? semi2.a : semi2.b) : null;
+    const champion = rF?.status==='confirmed' ? (rF.setsA>rF.setsB ? finalMatch.a : finalMatch.b) : null;
 
-    const labels=['Octavos','Cuartos','Semifinal','Final'];
     html += `<div class="card"><div class="section-title">${cat}</div><div class="bracket-wrap"><div class="bracket">`;
-    rounds.forEach((round,ri) => {
-      const label = labels[Math.max(0, labels.length-rounds.length+ri)];
-      html += `<div class="bracket-round"><div class="round-title">${label}</div><div class="round-matches">`;
-      round.forEach(match => {
-        const mineA = selectedPair && match.a.name===selectedPair.name;
-        const mineB = selectedPair && match.b.name===selectedPair.name;
-        const mineMatch = mineA || mineB;
-        html += `<div class="elim-match ${mineMatch?'mine-match':''}">
-          <div class="elim-team ${match.a.bye?'tbd':''} ${match.winner===match.a.name?'winner':''} ${mineA?'mine':''}">${match.a.bye?'—':match.a.name}</div>
-          <div class="elim-team ${match.b.bye?'tbd':''} ${match.winner===match.b.name?'winner':''} ${mineB?'mine':''}">${match.b.bye?'—':match.b.name}</div>
-        </div>`;
-      });
-      html += `</div></div>`;
+
+    // SEMIS
+    html += `<div class="bracket-round"><div class="round-title">Semifinal</div><div class="round-matches">`;
+    [[semi1,r1,w1],[semi2,r2,w2]].forEach(([s,r,w]) => {
+      const mineA = selectedPair && s.a===selectedPair.name;
+      const mineB = selectedPair && s.b===selectedPair.name;
+      const scoreStr = r?.status==='confirmed' ? r.sets.map(({gA,gB})=>gA+'-'+gB).join(' ') : '';
+      html += `<div class="elim-match ${(mineA||mineB)?'mine-match':''}">
+        <div class="elim-team ${w===s.a?'winner':''} ${mineA?'mine':''}">${s.a}
+          <span style="font-size:10px;margin-left:4px;">${w===s.a?scoreStr:''}</span></div>
+        <div class="elim-team ${w===s.b?'winner':''} ${mineB?'mine':''}">${s.b}
+          <span style="font-size:10px;margin-left:4px;">${w===s.b?scoreStr:''}</span></div>
+      </div>`;
     });
+    html += `</div></div>`;
+
+    // FINAL
+    const fA = finalMatch?.a || (w1||'Ganador Semi 1');
+    const fB = finalMatch?.b || (w2||'Ganador Semi 2');
+    const fScore = rF?.status==='confirmed' ? rF.sets.map(({gA,gB})=>gA+'-'+gB).join(' ') : '';
+    const mineFA = selectedPair && fA===selectedPair.name;
+    const mineFB = selectedPair && fB===selectedPair.name;
+    html += `<div class="bracket-round"><div class="round-title">Final</div><div class="round-matches">
+      <div class="elim-match ${(mineFA||mineFB)?'mine-match':''}">
+        <div class="elim-team ${champion===fA?'winner':''} ${!w1?'tbd':''} ${mineFA?'mine':''}">${fA}
+          <span style="font-size:10px;margin-left:4px;">${champion===fA?fScore:''}</span></div>
+        <div class="elim-team ${champion===fB?'winner':''} ${!w2?'tbd':''} ${mineFB?'mine':''}">${fB}
+          <span style="font-size:10px;margin-left:4px;">${champion===fB?fScore:''}</span></div>
+      </div>
+    </div></div>`;
+
+    // CAMPEÓN
+    html += `<div class="bracket-round"><div class="round-title">Campeón</div><div class="round-matches">
+      <div class="elim-match" style="border:2px solid var(--gold);">
+        <div class="elim-team winner" style="background:var(--gold);color:var(--navy);font-weight:700;">
+          ${champion ? '🏆 ' + champion : '🏆 Por definir'}
+        </div>
+      </div>
+    </div></div>`;
+
     html += `</div></div></div>`;
   });
 
