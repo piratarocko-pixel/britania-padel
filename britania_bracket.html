@@ -404,7 +404,7 @@ async function loadTournamentFromFirebase() {
     document.getElementById('tab-elim').style.display = '';
     document.getElementById('tab-results').style.display = '';
     showSyncStatus('✓ Torneo cargado desde Firebase');
-    showTab('groups');
+    showTab('schedule');
   } catch(e) { showSyncStatus('⚠ Error: ' + e.message); }
 }
 
@@ -755,10 +755,12 @@ function renderSchedule() {
   const byDay = {};
   DAYS.forEach(d => byDay[d]=[]);
   state.schedule.forEach(m => { if(byDay[m.day]) byDay[m.day].push(m); });
-  // Also include elim matches (semis and final) in calendar
+  // Include elim matches — sorted by time
   Object.values(state.elimMatches||{}).flat().forEach(m => {
-    if(m.day && byDay[m.day]) byDay[m.day].push(m);
+    if(m.day && byDay[m.day] !== undefined) byDay[m.day].push(m);
   });
+  // Sort each day by time
+  DAYS.forEach(d => byDay[d].sort((a,b) => (a.time||'').localeCompare(b.time||'')));
 
   let html = `<div class="card"><div class="section-title">Calendario de partidos</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
@@ -1206,6 +1208,7 @@ function confirmResult(id) {
   const m = findMatch(id);
   if(m && m.phase==='groups') updateStandings(m, r.setsA, r.setsB, r.sets);
   resolveElimTeams();
+  renderSchedule();
   renderElim();
   renderResults();
   renderStandings();
@@ -1380,6 +1383,7 @@ async function simulateAllResults() {
   });
 
   resolveElimTeams();
+  renderSchedule();
   renderResults();
   renderStandings();
   renderElim();
