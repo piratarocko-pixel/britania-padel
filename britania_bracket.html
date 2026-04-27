@@ -522,10 +522,11 @@ function renderTags(cat) {
 // ═══════════════════════════════════════════════════════
 function loadDemo() {
   state.cats = {
-    'Mixtos': ['Mendoza/Torres','Luna/Vega','Ríos/Díaz','Serrano/Mora','Pérez/García','Castillo/Ruiz','Herrera/Núñez','Jiménez/Cruz'],
-    '2da':    ['Romero/Flores','Guerrero/Reyes','Morales/Ortiz','Vargas/Ramos','Soto/Aguilar','Fuentes/Medina','Rojas/Muñoz','Delgado/Suárez'],
-    '3ra':    ['Ibarra/Espinoza','Cabrera/Sandoval','Molina/Acosta','Ponce/Salinas','Figueroa/Peña','Miranda/Ávila','Guzmán/Carrillo','León/Estrada'],
-    '4ta':    ['Cortés/Silva','Ramírez/Mejía','Vázquez/Navarro','Paredes/Domínguez','Campos/Lara','Montes/Santos','Pineda/Contreras','Bermúdez/Ochoa'],
+    '4ta Masc': ['Torres/Ruiz','García/López','Morales/Cruz','Jiménez/Vega','Reyes/Soto','Mendoza/Ríos','Castillo/Peña','Vargas/Ortiz'],
+    '3ra Masc': ['Luna/Méndez','Flores/Ríos','Castillo/Díaz','Herrera/Núñez','Vargas/Ramos','Soto/Aguilar','Romero/Fuentes','Guzmán/León'],
+    '4ta Fem':  ['Pérez/García','Ramírez/Torres','Sandoval/Molina','Espinoza/Cabrera','Miranda/Ávila','Salinas/Ponce','Rojas/Muñoz','Carrillo/Figueroa'],
+    '3ra Fem':  ['Vega/Serrano','Mora/Delgado','Suárez/Guerrero','Reyes/Campos','Lara/Montes','Santos/Pineda','Contreras/Bermúdez','Ochoa/Paredes'],
+    'Mixtos':   ['Mendoza/Torres','Luna/Vega','Ríos/Díaz','Serrano/Mora','Pérez/García','Castillo/Ruiz','Herrera/Núñez','Jiménez/Cruz'],
   };
   CATS.forEach(cat => renderTags(cat));
 }
