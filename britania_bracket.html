@@ -575,32 +575,55 @@ function assignSlots(matches, days) {
 
   function scheduleGroup(matches, courtNums) {
     const result = [];
+    // Distribute round-robin: assign each match to a day ensuring
+    // no pair plays twice on the same day
+    const dayAssigned = {}; // matchIdx -> dayIdx
+    const pairDayCount = {}; // pairName+dayIdx -> count
 
-    // Split matches evenly across days
-    const perDay = Math.ceil(matches.length / days.length);
-    const dayBuckets = days.map((d, i) => ({
-      day: d,
-      matches: matches.slice(i * perDay, (i + 1) * perDay)
-    }));
+    // Try to assign each match to a day where neither pair has played yet
+    const pending = [...matches];
+    const dayCount = days.length;
+    const assigned = [];
+    const unassigned = [];
 
-    dayBuckets.forEach(({day, matches: dayMatches}) => {
+    // First pass: assign greedily
+    for(const m of pending) {
+      let placed = false;
+      for(let di = 0; di < dayCount; di++) {
+        const keyA = m.a + '|' + di;
+        const keyB = m.b + '|' + di;
+        if(!pairDayCount[keyA] && !pairDayCount[keyB]) {
+          pairDayCount[keyA] = 1;
+          pairDayCount[keyB] = 1;
+          assigned.push({...m, dayIdx: di});
+          placed = true;
+          break;
+        }
+      }
+      if(!placed) unassigned.push(m);
+    }
+
+    // Fallback for unassigned: put in least loaded day
+    for(const m of unassigned) {
+      const dayCounts = days.map((d,i) => assigned.filter(x=>x.dayIdx===i).length);
+      const minDay = dayCounts.indexOf(Math.min(...dayCounts));
+      assigned.push({...m, dayIdx: minDay});
+    }
+
+    // Now schedule each day's matches into time slots
+    days.forEach((day, di) => {
+      const dayMatches = assigned.filter(m => m.dayIdx === di);
       const slots = DAY_SLOTS[day];
       let slotIdx = 0;
-      let pending = [...dayMatches];
-      const playedTodayPerPair = new Set(); // each pair plays max 1 match per day
+      let pending2 = [...dayMatches];
 
-      while(pending.length > 0 && slotIdx < slots.length) {
+      while(pending2.length > 0 && slotIdx < slots.length) {
         const time = slots[slotIdx];
         const busyPairs = new Set();
         const slotMatches = [];
         const remaining = [];
 
-        for(const m of pending) {
-          // Skip if pair already played today
-          if(playedTodayPerPair.has(m.a) || playedTodayPerPair.has(m.b)) {
-            remaining.push(m);
-            continue;
-          }
+        for(const m of pending2) {
           if(slotMatches.length < courtNums.length && !busyPairs.has(m.a) && !busyPairs.has(m.b)) {
             slotMatches.push(m);
             busyPairs.add(m.a);
@@ -611,12 +634,11 @@ function assignSlots(matches, days) {
         }
 
         slotMatches.forEach((m, ci) => {
-          result.push({ ...m, day, time, court: courtNums[ci], id: String(globalId++) });
-          playedTodayPerPair.add(m.a);
-          playedTodayPerPair.add(m.b);
+          const {dayIdx, ...rest} = m;
+          result.push({ ...rest, day, time, court: courtNums[ci], id: String(globalId++) });
         });
 
-        pending = remaining;
+        pending2 = remaining;
         slotIdx++;
       }
     });
