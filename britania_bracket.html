@@ -457,7 +457,7 @@ const DAY_SLOTS = {
   'Domingo':   ['09:00','10:30','12:00','13:30'],
 };
 
-let state = { generated: false, cats: {}, schedule: [], elimBrackets: {} };
+let state = { generated: false, pairInfo: {}, cats: {}, schedule: [], elimBrackets: {} };
 
 // ═══════════════════════════════════════════════════════
 // TAB NAVIGATION
@@ -511,9 +511,18 @@ function renderTags(cat) {
   const el = document.getElementById('tags-'+cat);
   const cnt = document.getElementById('count-'+cat);
   if(!el) return;
-  el.innerHTML = state.cats[cat].map((p,i)=>`
-    <span class="pair-tag">${p}<span class="remove" onclick="removePair('${cat}',${i})">✕</span></span>
-  `).join('');
+  el.innerHTML = state.cats[cat].map((p,i) => {
+    const info = state.pairInfo?.[p];
+    const phoneStr = info
+      ? `<span style="display:block;font-size:10px;color:var(--gray);margin-top:2px;">${info.p1p} · ${info.p2p}</span>`
+      : '';
+    return `<span class="pair-tag" style="flex-direction:column;align-items:flex-start;padding:6px 10px;">
+      <span style="display:flex;align-items:center;gap:6px;width:100%;">
+        ${p}<span class="remove" onclick="removePair('${cat}',${i})" style="margin-left:auto;">✕</span>
+      </span>
+      ${phoneStr}
+    </span>`;
+  }).join('');
   cnt.textContent = state.cats[cat].length + ' pareja' + (state.cats[cat].length!==1?'s':'');
 }
 
@@ -1475,12 +1484,25 @@ async function importarInscripciones() {
     // Clear current cats and load from inscripciones
     CATS.forEach(cat => { state.cats[cat] = []; });
 
+    if(!state.pairInfo) state.pairInfo = {};
+    // Map old category names to new ones just in case
+    const catMap = {
+      '2da': '3ra Masc', '3ra': '3ra Masc', '4ta': '4ta Masc',
+      'Mixtos': 'Mixtos', '4ta Masc': '4ta Masc', '3ra Masc': '3ra Masc',
+      '4ta Fem': '4ta Fem', '3ra Fem': '3ra Fem'
+    };
     lista.forEach(p => {
-      const cat = p.cat;
+      const cat = catMap[p.cat] || p.cat;
       if(!state.cats[cat]) return;
-      // Use "P1/P2" format for pair name
-      const name = p.p1 + '/' + p.p2;
-      if(!state.cats[cat].includes(name)) state.cats[cat].push(name);
+      const name = (p.p1 + '/' + p.p2).trim();
+      if(!state.cats[cat].includes(name)) {
+        state.cats[cat].push(name);
+        state.pairInfo[name] = {
+          p1: p.p1, p1p: p.p1p || '—',
+          p2: p.p2, p2p: p.p2p || '—',
+          cat
+        };
+      }
     });
 
     // Refresh UI
@@ -1500,7 +1522,7 @@ async function importarInscripciones() {
 // ═══════════════════════════════════════════════════════
 function clearAll() {
   if(!confirm('¿Limpiar todas las parejas y el torneo generado?')) return;
-  state = { generated:false, cats:{}, schedule:[], elimBrackets:{} };
+  state = { generated:false, pairInfo:{}, cats:{}, schedule:[], elimBrackets:{} };
   CATS.forEach(cat => state.cats[cat]=[]);
   initCatPanels();
   showTab('setup');
