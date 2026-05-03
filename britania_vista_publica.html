@@ -271,8 +271,8 @@ function scheduleRender() {
 db.collection('torneo').doc('config').onSnapshot(snap => {
   if(!snap.exists) return;
   TOURNAMENT.pairs = snap.data().cats || TOURNAMENT.pairs;
-  // Always use hardcoded CATS — never overwrite from Firebase
-  TOURNAMENT.cats = CATS;
+  // Always use correct categories — never overwrite from Firebase
+  TOURNAMENT.cats = ['4ta Masc','3ra Masc','4ta Fem','3ra Fem','Mixtos C','Mixtos D'];
   scheduleRender();
 });
 
@@ -684,7 +684,7 @@ function renderStandingsTable(grp, sorted) {
 }
 
 function renderPosiciones() {
-  const catsToShow = selectedPair ? [selectedPair.cat] : CATS;
+  const catsToShow = selectedPair ? [selectedPair.cat] : TOURNAMENT.cats;
   let html = `<div class="info-banner">🎾 Las 2 primeras de cada grupo avanzan a eliminación directa</div>`;
 
   catsToShow.forEach(cat => {
@@ -791,7 +791,7 @@ function resolveElimTeamsPublic() {
 }
 
 function renderBracket() {
-  const catsToShow = selectedPair ? [selectedPair.cat] : CATS;
+  const catsToShow = selectedPair ? [selectedPair.cat] : TOURNAMENT.cats;
   let html = '';
 
   resolveElimTeamsPublic();
