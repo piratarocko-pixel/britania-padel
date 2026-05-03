@@ -271,6 +271,8 @@ function scheduleRender() {
 db.collection('torneo').doc('config').onSnapshot(snap => {
   if(!snap.exists) return;
   TOURNAMENT.pairs = snap.data().cats || TOURNAMENT.pairs;
+  // Always use hardcoded CATS — never overwrite from Firebase
+  TOURNAMENT.cats = CATS;
   scheduleRender();
 });
 
@@ -682,7 +684,7 @@ function renderStandingsTable(grp, sorted) {
 }
 
 function renderPosiciones() {
-  const catsToShow = selectedPair ? [selectedPair.cat] : TOURNAMENT.cats;
+  const catsToShow = selectedPair ? [selectedPair.cat] : CATS;
   let html = `<div class="info-banner">🎾 Las 2 primeras de cada grupo avanzan a eliminación directa</div>`;
 
   catsToShow.forEach(cat => {
@@ -789,7 +791,7 @@ function resolveElimTeamsPublic() {
 }
 
 function renderBracket() {
-  const catsToShow = selectedPair ? [selectedPair.cat] : TOURNAMENT.cats;
+  const catsToShow = selectedPair ? [selectedPair.cat] : CATS;
   let html = '';
 
   resolveElimTeamsPublic();
