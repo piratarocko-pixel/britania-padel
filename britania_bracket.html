@@ -820,52 +820,59 @@ function buildElimMatches(cat) {
 
 // Resolve elim match teams from real standings
 function rescheduleSemisForPhoneConflicts() {
-  if(!state.elimMatches || !state.pairInfo || !state.phoneMap) return;
+  if(!state.elimMatches) return;
 
   const semiSlots = ['09:00','10:30','12:00','13:30','15:00','16:30','18:00'];
 
-  // Build a map of phone -> semis they're in
-  const phoneSemis = {}; // phone -> [{cat, semiIdx, match}]
+  // Build map: individual player name -> list of {cat, si, match}
+  // Works with both phone (real) and name-based (demo) detection
+  const playerSemis = {};
+
   CATS.forEach(cat => {
     const elimCat = state.elimMatches[cat];
     if(!elimCat) return;
     [elimCat[0], elimCat[1]].forEach((semi, si) => {
-      [semi.a, semi.b].forEach(pairName => {
-        const info = state.pairInfo[pairName];
-        if(!info) return;
-        [info.p1p, info.p2p].forEach(phone => {
-          if(!phone || phone === '—') return;
-          if(state.phoneMap[phone]?.length > 1) {
-            if(!phoneSemis[phone]) phoneSemis[phone] = [];
-            if(!phoneSemis[phone].find(x => x.cat===cat && x.si===si)) {
-              phoneSemis[phone].push({ cat, si, match: semi });
-            }
-          }
-        });
+      if(!semi || !semi.a || semi.a.includes('°') || semi.a.includes('Ganador')) return;
+
+      // Detect same player using BOTH name AND phone — must match both
+      const infoA = state.pairInfo?.[semi.a];
+      const infoB = state.pairInfo?.[semi.b];
+
+      // Build player fingerprints: name|phone for each player in the semi
+      const fingerprints = [];
+      if(infoA) {
+        fingerprints.push({ key: `${infoA.p1}|${infoA.p1p}`, cat, si });
+        fingerprints.push({ key: `${infoA.p2}|${infoA.p2p}`, cat, si });
+      }
+      if(infoB) {
+        fingerprints.push({ key: `${infoB.p1}|${infoB.p1p}`, cat, si });
+        fingerprints.push({ key: `${infoB.p2}|${infoB.p2p}`, cat, si });
+      }
+
+      // Fallback: if no pairInfo (demo), skip phone-based detection
+      fingerprints.forEach(({key, cat, si}) => {
+        if(key === '|' || key.includes('undefined') || key.includes('—')) return;
+        if(!playerSemis[key]) playerSemis[key] = [];
+        if(!playerSemis[key].find(x => x.cat===cat && x.si===si)) {
+          playerSemis[key].push({ cat, si });
+        }
       });
     });
   });
 
-  // For each player in multiple semis, ensure their matches are at least 1 slot apart
-  const courtsByCat = {};
-  CATS.forEach((cat, i) => { courtsByCat[cat] = CAT_COURTS[cat] || [1,2]; });
-
-  // Build current slot assignments: cat+si -> slotIdx
-  const semiSlotMap = {}; // key: cat+si -> slotIdx
+  // Build slot map
+  const semiSlotMap = {};
   CATS.forEach(cat => {
     const elimCat = state.elimMatches[cat];
     if(!elimCat) return;
     [0,1].forEach(si => {
-      const key = cat+si;
-      const time = elimCat[si]?.time || '09:00';
-      semiSlotMap[key] = semiSlots.indexOf(time);
+      semiSlotMap[cat+si] = semiSlots.indexOf(elimCat[si]?.time || '09:00');
     });
   });
 
-  // Check and fix conflicts
-  Object.entries(phoneSemis).forEach(([phone, semis]) => {
+  // Fix conflicts for any player in 2+ semis at same slot
+  Object.entries(playerSemis).forEach(([player, semis]) => {
     if(semis.length < 2) return;
-    // Sort by current slot
     semis.sort((a,b) => (semiSlotMap[a.cat+a.si]||0) - (semiSlotMap[b.cat+b.si]||0));
 
     for(let i=1; i<semis.length; i++) {
@@ -875,13 +882,11 @@ function rescheduleSemisForPhoneConflicts() {
       const currSlot = semiSlotMap[curr.cat+curr.si] ?? 0;
 
       if(Math.abs(currSlot - prevSlot) < 2) {
-        // Find next available slot at least 2 away from prev
         let newSlot = prevSlot + 2;
-        while(newSlot >= semiSlots.length) newSlot--;
-        if(newSlot !== currSlot) {
+        if(newSlot >= semiSlots.length) newSlot = prevSlot - 2;
+        if(newSlot >= 0 && newSlot < semiSlots.length && newSlot !== currSlot) {
           semiSlotMap[curr.cat+curr.si] = newSlot;
           state.elimMatches[curr.cat][curr.si].time = semiSlots[newSlot];
-          console.log('Rescheduled semi', curr.cat, curr.si, 'to', semiSlots[newSlot], 'for phone', phone);
         }
       }
     }
