@@ -602,9 +602,44 @@ function assignSlots(matches, days) {
   function scheduleGroup(matches, courtNums) {
     const result = [];
 
-    // Distribute matches evenly across days using round-robin
+    // Distribute matches across days respecting phone day preferences
     const matchesPerDay = days.map(() => []);
-    matches.forEach((m, i) => matchesPerDay[i % days.length].push(m));
+    const unpreferredMatches = [];
+
+    matches.forEach((m, i) => {
+      // Check if any player has a day preference for this category
+      const infoA = state.pairInfo?.[m.a];
+      const infoB = state.pairInfo?.[m.b];
+      const phones = [infoA?.p1p, infoA?.p2p, infoB?.p1p, infoB?.p2p].filter(p => p && p !== '—');
+      
+      let preferredDayIdx = -1;
+      for(const phone of phones) {
+        const pref = state.phoneDayPreference?.[phone]?.[m.cat];
+        if(pref) {
+          // Find the preferred day with fewest matches
+          let bestDi = -1;
+          pref.forEach(prefDay => {
+            const di = days.indexOf(prefDay);
+            if(di >= 0 && (bestDi === -1 || matchesPerDay[di].length < matchesPerDay[bestDi].length)) {
+              bestDi = di;
+            }
+          });
+          if(bestDi >= 0) { preferredDayIdx = bestDi; break; }
+        }
+      }
+
+      if(preferredDayIdx >= 0) {
+        matchesPerDay[preferredDayIdx].push(m);
+      } else {
+        unpreferredMatches.push({m, i});
+      }
+    });
+
+    // Distribute remaining matches round-robin
+    unpreferredMatches.forEach(({m, i}) => {
+      const minDay = matchesPerDay.reduce((min, arr, di) => arr.length < matchesPerDay[min].length ? di : min, 0);
+      matchesPerDay[minDay].push(m);
+    });
 
     days.forEach((day, di) => {
       const slots = DAY_SLOTS[day];
@@ -749,7 +784,28 @@ function generateSchedule(groupMatches) {
       });
     });
   }
-  return assignSlots(groupMatches, ['Martes','Miércoles','Jueves','Viernes']);
+
+  // For players in multiple categories, pre-assign their matches to different days
+  // Build a cross-category day assignment: phone -> {cat -> preferredDays}
+  const multiCatPhones = Object.entries(state.phoneMap)
+    .filter(([,cats]) => cats.length > 1)
+    .map(([phone, cats]) => ({ phone, cats }));
+
+  // Assign day buckets per cat for multi-category players
+  // Cat 0 gets days 0,1 | Cat 1 gets days 2,3 | etc.
+  state.phoneDayPreference = {};
+  const groupDays = ['Martes','Miércoles','Jueves','Viernes'];
+  multiCatPhones.forEach(({phone, cats}) => {
+    state.phoneDayPreference[phone] = {};
+    cats.forEach((cat, ci) => {
+      // Split days evenly between categories
+      const half = Math.ceil(groupDays.length / cats.length);
+      const preferred = groupDays.slice(ci * half, (ci + 1) * half);
+      state.phoneDayPreference[phone][cat] = preferred;
+    });
+  });
+
+  return assignSlots(groupMatches, groupDays);
 }
 
 function buildElimMatches(cat) {
